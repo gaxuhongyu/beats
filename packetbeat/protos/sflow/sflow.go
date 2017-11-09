@@ -1,7 +1,8 @@
 package sflow
 
 import (
-	"net"
+	"bytes"
+	"encoding/json"
 	"time"
 
 	"github.com/elastic/beats/libbeat/common"
@@ -28,17 +29,6 @@ type sflowPlugin struct {
 var (
 	debugf = logp.MakeDebug("sflow")
 )
-
-// SFDatagram represents sFlow datagram
-type SFDatagram struct {
-	Version    uint32 // Datagram version
-	IPVersion  uint32 // Data gram sFlow version
-	AgentSubID uint32 // Identifies a source of sFlow data
-	SequenceNo uint32 // Sequence of sFlow Datagrams
-	SysUpTime  uint32 // Current time (in milliseconds since device last booted
-	SamplesNo  uint32 // Number of samples
-	IPAddress  net.IP // Agent IP address
-}
 
 func init() {
 	protos.Register("sflow", New)
@@ -83,8 +73,38 @@ func (sflow *sflowPlugin) GetPorts() []int {
 }
 
 func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
+	var (
+		filter = []uint32{DataCounterSample}
+		b      []byte
+	)
 	defer logp.Recover("Sflow ParseUdp")
 	packetSize := len(pkt.Payload)
 	debugf("Parsing packet addressed with %s of length %d.", pkt.Tuple.String(), packetSize)
-	debugf("Sflow packet data: %v", pkt.Payload)
+	debugf("Sflow packet data: %X", pkt.Payload)
+	reader := bytes.NewReader(pkt.Payload)
+	d := NewSFDecoder(reader, filter)
+	records, err := d.SFDecode()
+	if err != nil || len(records) < 1 {
+		return
+	}
+
+	decodeMsg := Message{}
+
+	for _, data := range records {
+		switch data.(type) {
+		case *ExtSwitchData:
+			decodeMsg.ExtSWData = data.(*ExtSwitchData)
+		case *FlowSample:
+			decodeMsg.Sample = data.(*FlowSample)
+		case *SFDatagram:
+			decodeMsg.Header = data.(*SFDatagram)
+		}
+	}
+
+	b, err = json.Marshal(decodeMsg)
+	if err != nil {
+		logp.Err("Json err: %s", err.Error())
+		return
+	}
+	debugf("Unpack result:%v", b)
 }
