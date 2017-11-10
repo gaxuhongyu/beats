@@ -2,11 +2,8 @@ package sflow
 
 import (
 	"bytes"
-	"encoding/json"
 	"time"
 
-	vpacket "github.com/VerizonDigital/vflow/packet"
-	vsflow "github.com/VerizonDigital/vflow/sflow"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/packetbeat/protos"
@@ -76,39 +73,19 @@ func (sflow *sflowPlugin) GetPorts() []int {
 
 func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
 	var (
-		filter = []uint32{vsflow.DataCounterSample}
-		b      []byte
+		filter = []uint32{}
+		// b      []byte
 	)
 	defer logp.Recover("Sflow ParseUdp")
 	packetSize := len(pkt.Payload)
 	debugf("Parsing packet addressed with %s of length %d.", pkt.Tuple.String(), packetSize)
 	debugf("Sflow packet data: %X", pkt.Payload)
 	reader := bytes.NewReader(pkt.Payload)
-	d := vsflow.NewSFDecoder(reader, filter)
+	d := NewSFDecoder(reader, filter)
 	records, err := d.SFDecode()
 	if err != nil || len(records) < 1 {
+		debugf("SFDecode 解码错误：%s", err.Error())
 		return
 	}
-
-	decodeMsg := vsflow.Message{}
-
-	for _, data := range records {
-		switch data.(type) {
-		case *vpacket.Packet:
-			decodeMsg.Packet = data.(*vpacket.Packet)
-		case *vsflow.ExtSwitchData:
-			decodeMsg.ExtSWData = data.(*vsflow.ExtSwitchData)
-		case *vsflow.FlowSample:
-			decodeMsg.Sample = data.(*vsflow.FlowSample)
-		case *vsflow.SFDatagram:
-			decodeMsg.Header = data.(*vsflow.SFDatagram)
-		}
-	}
-
-	b, err = json.Marshal(decodeMsg)
-	if err != nil {
-		logp.Err("Json err: %s", err.Error())
-		return
-	}
-	debugf("Unpack result:%v", b)
+	debugf("Unpack result:%v", records)
 }
