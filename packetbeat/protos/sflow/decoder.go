@@ -210,7 +210,7 @@ func (d *SFDecoder) sfHeaderDecode() (*SFDatagram, error) {
 	if err = read(d.reader, &datagram.SamplesNo); err != nil {
 		return nil, err
 	}
-
+	debugf("Unpack SFDatagram:%X", datagram)
 	return datagram, nil
 }
 
@@ -232,42 +232,45 @@ func flowSampleDecode(r io.ReadSeeker, length uint32) (*SampleMessage, error) {
 	sampleHeader.Tag = SFSampleTag
 	sampleHeader.Length = length
 
-	for i := uint32(1); i < sampleHeader.SamplesNo; i++ {
+	debugf("Unpack SFSampleHeader:%X", sampleHeader)
+	for i := uint32(0); i < sampleHeader.SamplesNo; i++ {
 		tag, len, err := getSampleInfo(r)
 		if err != nil {
 			return nil, err
 		}
 		switch tag {
 		case SFRawPacketTag:
-			if err = rawPacketHeader.decode(r); err != nil {
-				return nil, err
-			}
 			rawPacketHeader.Tag = tag
 			rawPacketHeader.Length = len
+			if err = rawPacketHeader.decode(r); err != nil {
+				debugf("Read Raw data error:%s", err.Error())
+				return nil, err
+			}
+			debugf("Unpack SFRawPacketHeader:%X", rawPacketHeader)
 		case SFEthernetTag:
+			ethernetHeder.Tag = tag
+			ethernetHeder.Length = len
 			if err = ethernetHeder.decode(r); err != nil {
 				return nil, err
 			}
-			ethernetHeder.Tag = tag
-			ethernetHeder.Length = len
 		case SFIPV4Tag:
+			ipv4Data.Tag = tag
+			ipv4Data.Length = len
 			if err = ipv4Data.decode(r); err != nil {
 				return nil, err
 			}
-			ipv4Data.Tag = tag
-			ipv4Data.Length = len
 		case SFExtRouterDataTag:
+			extRouterData.Tag = tag
+			extRouterData.Length = len
 			if err = extRouterData.decode(r); err != nil {
 				return nil, err
 			}
-			extRouterData.Tag = tag
-			extRouterData.Length = len
 		case SFExtSwitchDataTag:
+			extSwitchData.Tag = tag
+			extSwitchData.Length = len
 			if err = extSwitchData.decode(r); err != nil {
 				return nil, err
 			}
-			extSwitchData.Tag = tag
-			extSwitchData.Length = len
 		default:
 			debugf("Not support tag :%d", tag)
 		}
@@ -316,7 +319,6 @@ func (sh *SFSampleHeader) decode(r io.ReadSeeker) error {
 	if err = read(r, &sh.SamplesNo); err != nil {
 		return err
 	}
-	debugf("Unpack SFSampleHeader:%v", sh)
 	return nil
 }
 
@@ -334,16 +336,11 @@ func (rp *SFRawPacketHeader) decode(r io.ReadSeeker) error {
 	if err = read(r, &rp.HeaderLength); err != nil {
 		return err
 	}
-	tmp := (4 - rp.HeaderLength) % 4
-	if tmp < 0 {
-		tmp += 4
-	}
-	rp.Header = make([]byte, rp.HeaderLength+tmp)
-	if _, err = r.Read(rp.Header); err != nil {
+	temp := make([]byte, rp.HeaderLength)
+	if _, err = r.Read(temp); err != nil {
 		return err
 	}
-	rp.Header = rp.Header[:rp.HeaderLength]
-	debugf("Unpack SFRawPacketHeader:%v", rp)
+	rp.Header = temp
 	return nil
 }
 
@@ -353,19 +350,12 @@ func (eh *SFEthernetHeder) decode(r io.ReadSeeker) error {
 	if err = read(r, &eh.FrameLength); err != nil {
 		return err
 	}
-
-	tmp := (4 - eh.FrameLength) % 4
-	if tmp < 0 {
-		tmp += 4
-	}
-	eh.Header = make([]byte, eh.FrameLength+tmp)
-	if _, err = r.Read(eh.Header); err != nil {
+	temp := make([]byte, eh.Length-4)
+	if _, err = r.Read(temp); err != nil {
 		return err
 	}
-	eh.Header = eh.Header[:eh.FrameLength]
-	debugf("Ethernet data %X", eh.Header)
-	debugf("Unpack SFEthernetHeder:%v", eh)
-
+	eh.Header = temp
+	debugf("Unpack SFEthernetHeder:%X", eh)
 	return nil
 }
 
@@ -399,7 +389,7 @@ func (ip *SFIPv4Data) decode(r io.ReadSeeker) error {
 	if err = read(r, &ip.Tos); err != nil {
 		return err
 	}
-	debugf("Unpack SFIPv4Data:%v", ip)
+	debugf("Unpack SFIPv4Data:%X", ip)
 	return nil
 }
 
@@ -419,7 +409,7 @@ func (er *SFExtRouterData) decode(r io.ReadSeeker) error {
 	if err = read(r, &er.DstMaskLen); err != nil {
 		return err
 	}
-	debugf("Unpack SFExtRouterData:%v", er)
+	debugf("Unpack SFExtRouterData:%X", er)
 	return nil
 }
 
@@ -437,7 +427,7 @@ func (es *SFExtSwitchData) decode(r io.ReadSeeker) error {
 	if err = read(r, &es.DstVlanPriority); err != nil {
 		return err
 	}
-	debugf("Unpack SFExtSwitchData:%v", es)
+	debugf("Unpack SFExtSwitchData:%X", es)
 	return nil
 }
 
