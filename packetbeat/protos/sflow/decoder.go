@@ -142,18 +142,18 @@ func NewSFDecoder(r io.ReadSeeker, f []uint32) SFDecoder {
 }
 
 // SFDecode decodes sFlow data
-func (d *SFDecoder) SFDecode() ([]interface{}, error) {
+func (d *SFDecoder) SFDecode() error {
 	// var data []interface{}
 	datagram, err := d.sfHeaderDecode()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	d.datagram = datagram
 
 	for i := uint32(0); i < datagram.SamplesNo; i++ {
 		sfTypeFormat, sfDataLength, err := getSampleInfo(d.reader)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		switch sfTypeFormat {
@@ -161,7 +161,7 @@ func (d *SFDecoder) SFDecode() ([]interface{}, error) {
 			h, err := flowSampleDecode(d.reader, sfDataLength)
 			if err != nil {
 				debugf("flowSampleDecode Decode Error:%s", err.Error())
-				return nil, err
+				return err
 			}
 			d.data = append(d.data, h)
 		case SFCounterTag:
@@ -171,7 +171,7 @@ func (d *SFDecoder) SFDecode() ([]interface{}, error) {
 		}
 
 	}
-	return nil, nil
+	return nil
 }
 
 func (d *SFDecoder) sfHeaderDecode() (*SFDatagram, error) {

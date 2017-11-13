@@ -89,13 +89,13 @@ func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
 	debugf("Sflow packet data: %X", pkt.Payload)
 	reader := bytes.NewReader(pkt.Payload)
 	d := NewSFDecoder(reader, filter)
-	records, err := d.SFDecode()
-	if err != nil || len(records) < 1 {
+	err := d.SFDecode()
+	if err != nil {
 		debugf("SFDecode 解码错误：%s", err.Error())
 		return
 	}
 	sflow.publishTransaction(&d)
-	debugf("Unpack result:%v", records)
+	// debugf("Unpack result:%v", records)
 }
 
 func (sflow *sflowPlugin) publishTransaction(d *SFDecoder) {
