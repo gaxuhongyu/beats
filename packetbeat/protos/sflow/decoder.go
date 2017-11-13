@@ -5,12 +5,16 @@ import (
 	"errors"
 	"io"
 	"net"
+	"time"
 )
 
 // SFDecoder represents sFlow decoder
 type SFDecoder struct {
-	reader io.ReadSeeker
-	filter []uint32 // Filter data format(s)
+	reader   io.ReadSeeker
+	filter   []uint32 // Filter data format(s)
+	datagram *SFDatagram
+	data     []*SampleMessage
+	ts       time.Time
 }
 
 // SFDatagram represents sFlow datagram
@@ -107,9 +111,8 @@ type SampleMessage struct {
 }
 
 var (
-	errNoneEnterpriseStandard = errors.New("the enterprise is not standard sflow data")
-	errDataLengthUnknown      = errors.New("the sflow data length is unknown")
-	errSFVersionNotSupport    = errors.New("the sflow version doesn't support")
+	errDataLengthUnknown   = errors.New("the sflow data length is unknown")
+	errSFVersionNotSupport = errors.New("the sflow version doesn't support")
 )
 
 const (
@@ -134,16 +137,18 @@ func NewSFDecoder(r io.ReadSeeker, f []uint32) SFDecoder {
 	return SFDecoder{
 		reader: r,
 		filter: f,
+		ts:     time.Now(),
 	}
 }
 
 // SFDecode decodes sFlow data
 func (d *SFDecoder) SFDecode() ([]interface{}, error) {
-	var data []interface{}
+	// var data []interface{}
 	datagram, err := d.sfHeaderDecode()
 	if err != nil {
 		return nil, err
 	}
+	d.datagram = datagram
 
 	for i := uint32(0); i < datagram.SamplesNo; i++ {
 		sfTypeFormat, sfDataLength, err := getSampleInfo(d.reader)
@@ -158,7 +163,7 @@ func (d *SFDecoder) SFDecode() ([]interface{}, error) {
 				debugf("flowSampleDecode Decode Error:%s", err.Error())
 				return nil, err
 			}
-			data = append(data, h)
+			d.data = append(d.data, h)
 		case SFCounterTag:
 			d.reader.Seek(int64(sfDataLength), 1)
 		default:
@@ -336,7 +341,7 @@ func (rp *SFRawPacketHeader) decode(r io.ReadSeeker) error {
 	if err = read(r, &rp.HeaderLength); err != nil {
 		return err
 	}
-	temp := make([]byte, rp.HeaderLength)
+	temp := make([]byte, rp.Length-16)
 	if _, err = r.Read(temp); err != nil {
 		return err
 	}
