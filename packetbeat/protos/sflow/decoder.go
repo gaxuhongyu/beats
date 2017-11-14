@@ -71,7 +71,7 @@ func (d *SFDecoder) SFDecode() ([]*SFTransaction, error) {
 		return nil, err
 	}
 	for i := uint32(0); i < datagram.SamplesNo; i++ {
-		var trans SFTransaction
+		trans := &SFTransaction{}
 		sfTypeFormat, sfDataLength, err := getSampleInfo(d.reader)
 		if err != nil {
 			return nil, err
@@ -79,20 +79,21 @@ func (d *SFDecoder) SFDecode() ([]*SFTransaction, error) {
 
 		switch sfTypeFormat {
 		case SFSampleTag:
+			trans.datagram = datagram
 			h, err := flowSampleDecode(d.reader, sfDataLength)
 			if err != nil {
 				debugf("flowSampleDecode Decode Error:%s", err.Error())
 				return nil, err
 			}
-			d.data = append(d.data, h)
+			trans.data = h
 		case SFCounterTag:
 			d.reader.Seek(int64(sfDataLength), 1)
 		default:
 			d.reader.Seek(int64(sfDataLength), 1)
 		}
-
+		data = append(data, trans)
 	}
-	return nil, nil
+	return data, nil
 }
 
 func (d *SFDecoder) sfHeaderDecode() (*SFDatagram, error) {
