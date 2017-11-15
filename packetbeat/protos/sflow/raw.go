@@ -51,25 +51,25 @@ func decodeRawPacketHeader(r io.ReadSeeker, length uint32) (*SFRawPacketHeader, 
 // TransInfo get trans info
 func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
 	var proto int
-	event["PackageSize"] = rp.FrameLength
-	event["VlanID"] = rp.header.L2.Vlan
-	event["EtherType"] = rp.header.L2.EtherType
+	event["packagesize"] = rp.FrameLength
+	event["vlanid"] = rp.header.L2.Vlan
+	event["ethertype"] = rp.header.L2.EtherType
 	switch rp.header.L2.EtherType {
 	case packet.EtherTypeIPv4:
 		header := rp.header.L3.(packet.IPv4Header)
-		event["IPVersion"] = header.Version
-		event["Tos"] = header.TOS
-		event["Ttl"] = header.TTL
-		event["IPProtocol"] = header.Protocol
-		event["SrcIP"] = header.Src
-		event["DstIP"] = header.Dst
+		event["ipversion"] = header.Version
+		event["tos"] = header.TOS
+		event["ttl"] = header.TTL
+		event["ipprotocol"] = header.Protocol
+		event["srcip"] = header.Src
+		event["dstip"] = header.Dst
 		proto = header.Protocol
 	case packet.EtherTypeIPv6:
 		header := rp.header.L3.(packet.IPv6Header)
-		event["IPVersion"] = header.Version
-		event["IPProtocol"] = header.NextHeader
-		event["SrcIP"] = header.Src
-		event["DstIP"] = header.Dst
+		event["ipversion"] = header.Version
+		event["ipprotocol"] = header.NextHeader
+		event["srcip"] = header.Src
+		event["dstip"] = header.Dst
 		proto = header.NextHeader
 	}
 

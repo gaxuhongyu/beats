@@ -41,8 +41,7 @@ func decodeExtRouter(r io.ReadSeeker) (*SFExtRouterData, error) {
 
 // TransInfo get trans info
 func (eh *SFExtRouterData) TransInfo(event common.MapStr) {
-	event["ipVersion"] = eh.IPVersion
 	event["nextHop"] = eh.NextHop
-	event["srcMaskLen"] = eh.SrcMaskLen
-	event["dstMaskLen"] = eh.DstMaskLen
+	event["srcmasklen"] = eh.SrcMaskLen
+	event["dstmasklen"] = eh.DstMaskLen
 }

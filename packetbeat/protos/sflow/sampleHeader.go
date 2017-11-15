@@ -64,13 +64,13 @@ func (sh *SFSampleHeader) decode(r io.ReadSeeker) error {
 
 // TransInfo get trans info
 func (sh *SFSampleHeader) TransInfo(event common.MapStr) {
-	event["SequenceNo"] = sh.SamplesNo
-	event["SampleRate"] = sh.SampleRate
-	event["SamplePool"] = sh.SamplePool
-	event["Drops"] = sh.Drops
-	event["InputFormat"] = sh.InputFormat
-	event["InputIndex"] = sh.InputIndex
-	event["OutputFormat"] = sh.OutputFormat
-	event["OutputIndex"] = sh.OutputIndex
-	event["FlowsRecords"] = sh.SampleRate
+	event["sequenceno"] = sh.SamplesNo
+	event["samplerate"] = sh.SampleRate
+	event["samplepool"] = sh.SamplePool
+	event["drops"] = sh.Drops
+	event["inputformat"] = sh.InputFormat
+	event["inputindex"] = sh.InputIndex
+	event["outputformat"] = sh.OutputFormat
+	event["outputindex"] = sh.OutputIndex
+	event["flowsrecords"] = sh.SampleRate
 }

@@ -38,6 +38,6 @@ func decodeExtSwitch(r io.ReadSeeker) (*SFExtSwitchData, error) {
 
 // TransInfo get trans info
 func (es *SFExtSwitchData) TransInfo(event common.MapStr) {
-	event["SrcVlanID"] = es.SrcVlanID
-	event["DstVlanID"] = es.DstVlanID
+	event["srcvlanid"] = es.SrcVlanID
+	event["dstvlanid"] = es.DstVlanID
 }

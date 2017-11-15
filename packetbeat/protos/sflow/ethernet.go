@@ -55,6 +55,6 @@ func (eh *SFEthernetHeder) paserMacInfo() error {
 
 // TransInfo get trans info
 func (eh *SFEthernetHeder) TransInfo(event common.MapStr) {
-	event["SrcMac"] = eh.SrcMac
-	event["DstMac"] = eh.DstMac
+	event["srcmac"] = eh.SrcMac
+	event["dstmac"] = eh.DstMac
 }

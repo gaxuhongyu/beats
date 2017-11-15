@@ -100,11 +100,11 @@ func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
 func (sflow *sflowPlugin) publishTransaction(d []*SFTransaction) {
 	for _, msg := range d {
 		event := common.MapStr{
-			"type":           "sflow",
-			"agent":          msg.datagram.AgentAddress,
-			"subAgentID":     msg.datagram.AgentSubID,
-			"sequenceNumber": msg.datagram.SequenceNo,
-			"uptime":         msg.datagram.SysUpTime,
+			"type":       "sflow",
+			"agent":      msg.datagram.AgentAddress,
+			"subagentid": msg.datagram.AgentSubID,
+			"sequenceno": msg.datagram.SequenceNo,
+			"uptime":     msg.datagram.SysUpTime,
 		}
 		for _, d := range msg.data {
 			d.TransInfo(event)
