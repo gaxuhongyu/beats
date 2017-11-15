@@ -56,7 +56,7 @@ func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
 	event["EtherType"] = rp.header.L2.EtherType
 	switch rp.header.L2.EtherType {
 	case packet.EtherTypeIPv4:
-		header := rp.header.L3.(*packet.IPv4Header)
+		header := rp.header.L3.(packet.IPv4Header)
 		event["IPVersion"] = header.Version
 		event["Tos"] = header.TOS
 		event["Ttl"] = header.TTL
@@ -65,7 +65,7 @@ func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
 		event["DstIP"] = header.Dst
 		proto = header.Protocol
 	case packet.EtherTypeIPv6:
-		header := rp.header.L3.(*packet.IPv6Header)
+		header := rp.header.L3.(packet.IPv6Header)
 		event["IPVersion"] = header.Version
 		event["IPProtocol"] = header.NextHeader
 		event["SrcIP"] = header.Src
@@ -75,16 +75,16 @@ func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
 
 	switch proto {
 	case packet.IANAProtoICMP:
-		header := rp.header.L4.(*packet.ICMP)
+		header := rp.header.L4.(packet.ICMP)
 		event["IcmpType"] = header.Type
 		event["IcmpCode"] = header.Code
 	case packet.IANAProtoTCP:
-		header := rp.header.L4.(*packet.TCPHeader)
+		header := rp.header.L4.(packet.TCPHeader)
 		event["SrcPort"] = header.SrcPort
 		event["DstPort"] = header.DstPort
 		event["TcpFlags"] = header.Flags
 	case packet.IANAProtoUDP:
-		header := rp.header.L4.(*packet.UDPHeader)
+		header := rp.header.L4.(packet.UDPHeader)
 		event["SrcPort"] = header.SrcPort
 		event["DstPort"] = header.DstPort
 	}
