@@ -18,7 +18,7 @@ type SFRawPacketHeader struct {
 	header         *packet.Packet
 }
 
-func decodeRawPacketHeader(r io.ReadSeeker) (*SFRawPacketHeader, error) {
+func decodeRawPacketHeader(r io.ReadSeeker, length uint32) (*SFRawPacketHeader, error) {
 	var (
 		header = &SFRawPacketHeader{}
 		err    error
@@ -35,7 +35,7 @@ func decodeRawPacketHeader(r io.ReadSeeker) (*SFRawPacketHeader, error) {
 	if err = read(r, &header.HeaderLength); err != nil {
 		return nil, err
 	}
-	temp := make([]byte, header.Length-16)
+	temp := make([]byte, length-16)
 	if _, err = r.Read(temp); err != nil {
 		return nil, err
 	}

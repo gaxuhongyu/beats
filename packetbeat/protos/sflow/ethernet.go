@@ -20,7 +20,7 @@ type SFEthernetHeder struct {
 	Header      []byte //  original data
 }
 
-func decodeEthernetHeder(r io.ReadSeeker) (*SFEthernetHeder, error) {
+func decodeEthernetHeder(r io.ReadSeeker, length uint32) (*SFEthernetHeder, error) {
 	var (
 		eh  = &SFEthernetHeder{}
 		err error
@@ -29,7 +29,7 @@ func decodeEthernetHeder(r io.ReadSeeker) (*SFEthernetHeder, error) {
 	if err = read(r, &eh.FrameLength); err != nil {
 		return nil, err
 	}
-	temp := make([]byte, eh.Length-4)
+	temp := make([]byte, length-4)
 	if _, err = r.Read(temp); err != nil {
 		return nil, err
 	}

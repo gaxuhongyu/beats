@@ -162,7 +162,7 @@ func flowSampleDecode(r io.ReadSeeker, length uint32) ([]interface{}, error) {
 		switch tag {
 		case SFRawPacketTag:
 			var raw *SFRawPacketHeader
-			if raw, err = decodeRawPacketHeader(r); err != nil {
+			if raw, err = decodeRawPacketHeader(r, len); err != nil {
 				debugf("Read Raw data error:%s", err.Error())
 				return nil, err
 			}
@@ -172,7 +172,7 @@ func flowSampleDecode(r io.ReadSeeker, length uint32) ([]interface{}, error) {
 			data = append(data, raw)
 		case SFEthernetTag:
 			var eth *SFEthernetHeder
-			if eth, err = decodeEthernetHeder(r); err != nil {
+			if eth, err = decodeEthernetHeder(r, len); err != nil {
 				return nil, err
 			}
 			eth.Tag = tag
