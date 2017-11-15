@@ -50,11 +50,12 @@ func decodeRawPacketHeader(r io.ReadSeeker, length uint32) (*SFRawPacketHeader, 
 
 // TransInfo get trans info
 func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
+	var proto int
 	event["PackageSize"] = rp.FrameLength
 	event["VlanID"] = rp.header.L2.Vlan
 	event["EtherType"] = rp.header.L2.EtherType
-	switch rp.header.L3.(type) {
-	case packet.IPv4Header:
+	switch rp.header.L2.EtherType {
+	case packet.EtherTypeIPv4:
 		header := rp.header.L3.(*packet.IPv4Header)
 		event["IPVersion"] = header.Version
 		event["Tos"] = header.TOS
@@ -62,25 +63,27 @@ func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
 		event["IPProtocol"] = header.Protocol
 		event["SrcIP"] = header.Src
 		event["DstIP"] = header.Dst
-	case packet.IPv6Header:
+		proto = header.Protocol
+	case packet.EtherTypeIPv6:
 		header := rp.header.L3.(*packet.IPv6Header)
 		event["IPVersion"] = header.Version
 		event["IPProtocol"] = header.NextHeader
 		event["SrcIP"] = header.Src
 		event["DstIP"] = header.Dst
+		proto = header.NextHeader
 	}
 
-	switch rp.header.L4.(type) {
-	case packet.ICMP:
+	switch proto {
+	case packet.IANAProtoICMP:
 		header := rp.header.L4.(*packet.ICMP)
 		event["IcmpType"] = header.Type
 		event["IcmpCode"] = header.Code
-	case packet.TCPHeader:
+	case packet.IANAProtoTCP:
 		header := rp.header.L4.(*packet.TCPHeader)
 		event["SrcPort"] = header.SrcPort
 		event["DstPort"] = header.DstPort
 		event["TcpFlags"] = header.Flags
-	case packet.UDPHeader:
+	case packet.IANAProtoUDP:
 		header := rp.header.L4.(*packet.UDPHeader)
 		event["SrcPort"] = header.SrcPort
 		event["DstPort"] = header.DstPort
