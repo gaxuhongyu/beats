@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/packetbeat/protos"
@@ -92,50 +93,25 @@ func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
 		debugf("SFDecode 解码错误：%s", err.Error())
 		return
 	}
-	// sflow.publishTransaction(records)
+	sflow.publishTransaction(records)
 	debugf("Unpack result:%v", records)
 }
 
-// func (sflow *sflowPlugin) publishTransaction(d []*SFTransaction) {
-// 	for _, message := range d {
-// 		if message.IPv4Data == nil {
-// 			continue
-// 		}
-// 		event := common.MapStr{
-// 			"type":           "sflow",
-// 			"agent":          d.datagram.AgentAddress,
-// 			"subAgentID":     d.datagram.AgentSubID,
-// 			"sequenceNumber": d.datagram.SequenceNo,
-// 			"uptime":         d.datagram.SysUpTime,
-// 		}
-// 		if message.Header != nil {
-// 			event["SequenceNo"] = message.Header.SequenceNo
-// 			event["SampleRate"] = message.Header.SampleRate
-// 			event["flowRecords"] = message.Header.SampleRate
-// 			event["samplePool"] = message.Header.SamplePool
-// 			event["drops"] = message.Header.Drops
-// 			event["inputIndex"] = message.Header.InputIndex
-// 			event["outputIndex"] = message.Header.OutputIndex
-// 		}
-
-// 		if message.IPv4Data != nil {
-// 			event["packageSize"] = message.IPv4Data.FrameLength
-// 			event["srcIP"] = message.IPv4Data.SrcIP
-// 			event["dstIP"] = message.IPv4Data.DstIP
-// 			event["srcPort"] = message.IPv4Data.SrcPort
-// 			event["dstPort"] = message.IPv4Data.DstPort
-// 			event["tcpFlags"] = message.IPv4Data.TCPFlags
-// 			event["tos"] = message.IPv4Data.Tos
-// 		}
-// 		if message.ExtRouterData != nil {
-// 			event["ipVersion"] = message.ExtRouterData.IPVersion
-// 			event["nextHop"] = message.ExtRouterData.NextHop.String()
-// 			event["srcMaskLen"] = message.ExtRouterData.SrcMaskLen
-// 			event["dstMaskLen"] = message.ExtRouterData.DstMaskLen
-// 		}
-// 		sflow.results(beat.Event{
-// 			Timestamp: d.ts,
-// 			Fields:    event,
-// 		})
-// 	}
-// }
+func (sflow *sflowPlugin) publishTransaction(d []*SFTransaction) {
+	for _, msg := range d {
+		event := common.MapStr{
+			"type":           "sflow",
+			"agent":          msg.datagram.AgentAddress,
+			"subAgentID":     msg.datagram.AgentSubID,
+			"sequenceNumber": msg.datagram.SequenceNo,
+			"uptime":         msg.datagram.SysUpTime,
+		}
+		for _, d := range msg.data {
+			d.TransInfo(event)
+		}
+		sflow.results(beat.Event{
+			Timestamp: msg.t,
+			Fields:    event,
+		})
+	}
+}

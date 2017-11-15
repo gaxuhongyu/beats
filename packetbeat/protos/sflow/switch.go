@@ -1,6 +1,10 @@
 package sflow
 
-import "io"
+import (
+	"io"
+
+	"github.com/elastic/beats/libbeat/common"
+)
 
 // SFExtSwitchData Extended Vlan priority data
 type SFExtSwitchData struct {
@@ -30,4 +34,10 @@ func decodeExtSwitch(r io.ReadSeeker) (*SFExtSwitchData, error) {
 		return nil, err
 	}
 	return es, nil
+}
+
+// TransInfo get trans info
+func (es *SFExtSwitchData) TransInfo(event common.MapStr) {
+	event["SrcVlanID"] = es.SrcVlanID
+	event["DstVlanID"] = es.DstVlanID
 }

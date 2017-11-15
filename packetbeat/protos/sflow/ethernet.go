@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/elastic/beats/libbeat/common"
 )
 
 var (
@@ -49,4 +51,10 @@ func (eh *SFEthernetHeder) paserMacInfo() error {
 	eh.SrcMac = fmt.Sprintf(FmtAddr, b[0], b[1], b[2], b[3], b[4], b[5])
 	eh.DstMac = fmt.Sprintf(FmtAddr, b[6], b[7], b[8], b[9], b[10], b[11])
 	return nil
+}
+
+// TransInfo get trans info
+func (eh *SFEthernetHeder) TransInfo(event common.MapStr) {
+	event["SrcMac"] = eh.SrcMac
+	event["DstMac"] = eh.DstMac
 }

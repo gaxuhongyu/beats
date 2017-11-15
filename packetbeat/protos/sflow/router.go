@@ -3,6 +3,8 @@ package sflow
 import (
 	"io"
 	"net"
+
+	"github.com/elastic/beats/libbeat/common"
 )
 
 // SFExtRouterData Extended router data
@@ -35,4 +37,12 @@ func decodeExtRouter(r io.ReadSeeker) (*SFExtRouterData, error) {
 		return nil, err
 	}
 	return er, nil
+}
+
+// TransInfo get trans info
+func (eh *SFExtRouterData) TransInfo(event common.MapStr) {
+	event["ipVersion"] = eh.IPVersion
+	event["nextHop"] = eh.NextHop
+	event["srcMaskLen"] = eh.SrcMaskLen
+	event["dstMaskLen"] = eh.DstMaskLen
 }

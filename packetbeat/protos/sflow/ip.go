@@ -3,6 +3,8 @@ package sflow
 import (
 	"io"
 	"net"
+
+	"github.com/elastic/beats/libbeat/common"
 )
 
 // SFIPv4Data Ethernet header data
@@ -53,4 +55,9 @@ func decodeSFIPv4Data(r io.ReadSeeker) (*SFIPv4Data, error) {
 		return nil, err
 	}
 	return ip, nil
+}
+
+// TransInfo get trans info
+func (eh *SFIPv4Data) TransInfo(event common.MapStr) {
+
 }

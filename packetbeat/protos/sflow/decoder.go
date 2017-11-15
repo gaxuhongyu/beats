@@ -6,7 +6,14 @@ import (
 	"io"
 	"net"
 	"time"
+
+	"github.com/elastic/beats/libbeat/common"
 )
+
+// SfTrans get event info interface
+type SfTrans interface {
+	TransInfo(event common.MapStr)
+}
 
 // SFDecoder represents sFlow decoder
 type SFDecoder struct {
@@ -28,8 +35,9 @@ type SFDatagram struct {
 
 // SFTransaction represents flow sample decoded packet
 type SFTransaction struct {
+	t        time.Time
 	datagram *SFDatagram
-	data     []interface{}
+	data     []SfTrans
 }
 
 var (
@@ -59,7 +67,6 @@ func NewSFDecoder(r io.ReadSeeker, f []uint32) SFDecoder {
 	return SFDecoder{
 		reader: r,
 		filter: f,
-		ts:     time.Now(),
 	}
 }
 
@@ -71,7 +78,9 @@ func (d *SFDecoder) SFDecode() ([]*SFTransaction, error) {
 		return nil, err
 	}
 	for i := uint32(0); i < datagram.SamplesNo; i++ {
-		trans := &SFTransaction{}
+		trans := &SFTransaction{
+			t: time.Now(),
+		}
 		sfTypeFormat, sfDataLength, err := getSampleInfo(d.reader)
 		if err != nil {
 			return nil, err
@@ -141,9 +150,9 @@ func (d *SFDecoder) sfHeaderDecode() (*SFDatagram, error) {
 	return datagram, nil
 }
 
-func flowSampleDecode(r io.ReadSeeker, length uint32) ([]interface{}, error) {
+func flowSampleDecode(r io.ReadSeeker, length uint32) ([]SfTrans, error) {
 	var (
-		data         []interface{}
+		data         []SfTrans
 		sampleHeader = &SFSampleHeader{}
 		err          error
 	)

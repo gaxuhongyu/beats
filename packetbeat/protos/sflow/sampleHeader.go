@@ -1,6 +1,10 @@
 package sflow
 
-import "io"
+import (
+	"io"
+
+	"github.com/elastic/beats/libbeat/common"
+)
 
 // SFSampleHeader Expanded Flow sample struct
 type SFSampleHeader struct {
@@ -56,4 +60,17 @@ func (sh *SFSampleHeader) decode(r io.ReadSeeker) error {
 	}
 	debugf("Unpack SFSampleHeader:%X", sh)
 	return nil
+}
+
+// TransInfo get trans info
+func (sh *SFSampleHeader) TransInfo(event common.MapStr) {
+	event["SequenceNo"] = sh.SamplesNo
+	event["SampleRate"] = sh.SampleRate
+	event["SamplePool"] = sh.SamplePool
+	event["Drops"] = sh.Drops
+	event["InputFormat"] = sh.InputFormat
+	event["InputIndex"] = sh.InputIndex
+	event["OutputFormat"] = sh.OutputFormat
+	event["OutputIndex"] = sh.OutputIndex
+	event["FlowsRecords"] = sh.SampleRate
 }
