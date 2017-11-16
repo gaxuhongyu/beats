@@ -90,7 +90,7 @@ func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
 	d := NewSFDecoder(reader, filter)
 	records, err := d.SFDecode()
 	if err != nil {
-		debugf("SFDecode 解码错误：%s", err.Error())
+		debugf("SFDecode decode error：%s", err.Error())
 		return
 	}
 	sflow.publishTransaction(records)
