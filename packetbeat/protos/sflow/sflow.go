@@ -78,16 +78,12 @@ func (sflow *sflowPlugin) GetPorts() []int {
 }
 
 func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
-	var (
-		filter = []uint32{}
-		// b      []byte
-	)
 	defer logp.Recover("Sflow ParseUdp")
 	packetSize := len(pkt.Payload)
 	debugf("Parsing packet addressed with %s of length %d.", pkt.Tuple.String(), packetSize)
 	debugf("Sflow packet data: %X", pkt.Payload)
 	reader := bytes.NewReader(pkt.Payload)
-	d := NewSFDecoder(reader, filter)
+	d := NewSFDecoder(reader, pkt.Ts)
 	records, err := d.SFDecode()
 	if err != nil {
 		debugf("SFDecode decode error：%s", err.Error())
