@@ -421,6 +421,25 @@ packetbeat.protocols:
   # incoming responses, but sent to Elasticsearch immediately.
   #transaction_timeout: 10s
 
+- type: sflow
+  # Enable Sflow monitoring. Default: true
+  #enabled: true
+
+  # Configure the ports where to listen for Sflow traffic. You can disable
+  # the Sflow protocol by commenting out the list of ports.
+  ports: [6343]
+
+  # This option is spec parser sflow sample type, must spec one type, 
+  # 1:flow sample
+  # 2:counter sample
+  # 3:Expanded flow sample
+  # 4:Expanded Counter sample
+  sample_type: [1,2,3,4]
+
+  # Transaction timeout. Expired transactions will no longer be correlated to
+  # incoming responses, but sent to Elasticsearch immediately.
+  #transaction_timeout: 10s
+
 #=========================== Monitored processes ==============================
 
 # Configure the processes to be monitored and how to find them. If a process is

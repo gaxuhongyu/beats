@@ -12,11 +12,8 @@ import (
 
 type sflowPlugin struct {
 	// Configuration data.
-	ports              []int
-	sendRequest        bool
-	sendResponse       bool
-	includeAuthorities bool
-	includeAdditionals bool
+	ports      []int
+	sampleType []int
 
 	// Cache of active sflow transactions. The map key is the HashableDnsTuple
 	// associated with the request.
@@ -66,10 +63,9 @@ func (sflow *sflowPlugin) init(results protos.Reporter, config *sflowConfig) err
 
 func (sflow *sflowPlugin) setFromConfig(config *sflowConfig) error {
 	sflow.ports = config.Ports
-	sflow.ports = config.Ports
-	sflow.sendRequest = config.SendRequest
-	sflow.sendResponse = config.SendResponse
+	sflow.sampleType = config.SampleType
 	sflow.transactionTimeout = config.TransactionTimeout
+	debugf("Sflow Plugin Config Info: %X", config)
 	return nil
 }
 
