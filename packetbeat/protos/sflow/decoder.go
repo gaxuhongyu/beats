@@ -44,11 +44,16 @@ var (
 	errSFVersionNotSupport = errors.New("the sflow version doesn't support")
 )
 
+//Spec http://www.sflow.org/developers/diagrams/sFlowV5Sample.pdf
 const (
 	// SFSampleTag flow sample tag
-	SFSampleTag = uint32(3)
-	// SFCounterTag Counter sample tag
-	SFCounterTag = uint32(4)
+	SFSampleTag = uint32(1)
+	// SFCounterTag counter sample tag
+	SFCounterTag = uint32(2)
+	// SFExtSampleTag Expanded flow sample tag
+	SFExtSampleTag = uint32(3)
+	// SFExtCounterTag Expanded Counter sample tag
+	SFExtCounterTag = uint32(4)
 )
 
 // NewSFDecoder constructs new sflow decoder
@@ -88,13 +93,18 @@ func decodeSflowData(r io.ReadSeeker) (*SFTransaction, error) {
 
 	switch sfTypeFormat {
 	case SFSampleTag:
-		h, err := flowSampleDecode(r, sfDataLength)
+		r.Seek(int64(sfDataLength), 1)
+	case SFCounterTag:
+		r.Seek(int64(sfDataLength), 1)
+	case SFExtSampleTag:
+		h, err := flowExpandedSampleDecode(r, sfDataLength)
 		if err != nil {
-			debugf("flowSampleDecode Decode Error:%s", err.Error())
+			debugf("flowExpandedSampleDecode Decode Error:%s", err.Error())
 			return nil, err
 		}
 		trans.data = h
-	case SFCounterTag:
+	case SFExtCounterTag:
+		debugf("Sflow Ext Counter data: %v", r)
 		r.Seek(int64(sfDataLength), 1)
 	default:
 		r.Seek(int64(sfDataLength), 1)
@@ -102,7 +112,7 @@ func decodeSflowData(r io.ReadSeeker) (*SFTransaction, error) {
 	return trans, nil
 }
 
-// decodes sFlow header
+// decodes sFlow header,here is spec http://www.sflow.org/developers/diagrams/sFlowV5Datagram.pdf
 func decodeSflowHeader(r io.ReadSeeker) (*SFDatagram, error) {
 	var (
 		datagram = &SFDatagram{}

@@ -160,7 +160,7 @@ func Test_decodeSflowData(t *testing.T) {
 	tran := &SFTransaction{}
 	r := bytes.NewReader(TestDecodeSflowDataRaw)
 	r.Seek(int64(8), 1)
-	t1, _ := flowSampleDecode(r, 0x013C)
+	t1, _ := flowExpandedSampleDecode(r, 0x013C)
 	tran.data = t1
 	tests := []struct {
 		name    string

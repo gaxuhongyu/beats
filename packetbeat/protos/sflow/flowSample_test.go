@@ -49,7 +49,7 @@ var TestExtSwitchRawData = []byte{
 	0x00, 0x00, 0xC0, 0x91, 0x00, 0x00, 0xF0, 0xB0,
 }
 
-var TestFlowSampleDecodeRawData = []byte{
+var TestflowExpandedSampleDecodeRawData = []byte{
 	0x0E, 0x3A, 0x93, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x03, 0xE8, 0xA2, 0x76, 0x59, 0x6E, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD6, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0xEA,
 	0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x01, 0x0A, 0x06, 0x20, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x03, 0xE9,
@@ -63,14 +63,14 @@ var TestFlowSampleDecodeRawData = []byte{
 	0xC6, 0x08, 0x1C, 0xBB,
 }
 
-func Test_decodeSampleHeader(t *testing.T) {
+func Test_decodeExpandedSampleHeader(t *testing.T) {
 	type args struct {
 		r io.ReadSeeker
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *SFSampleHeader
+		want    *SFExpandedSampleHeader
 		wantErr bool
 	}{
 		{
@@ -78,7 +78,7 @@ func Test_decodeSampleHeader(t *testing.T) {
 			args: args{
 				r: bytes.NewReader(TestSampleHeaderRawData),
 			},
-			want: &SFSampleHeader{
+			want: &SFExpandedSampleHeader{
 				Tag:          0,
 				Length:       0,
 				SequenceNo:   0x9A8D,
@@ -98,13 +98,13 @@ func Test_decodeSampleHeader(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := decodeSampleHeader(tt.args.r)
+			got, err := decodeExpandedSampleHeader(tt.args.r)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("decodeSampleHeader() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("decodeExpandedSampleHeader() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("decodeSampleHeader() = %v, want %v", got, tt.want)
+				t.Errorf("decodeExpandedSampleHeader() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -112,9 +112,9 @@ func Test_decodeSampleHeader(t *testing.T) {
 
 func Test_SampleHeaderTransInfo(t *testing.T) {
 	type args struct {
-		r *SFSampleHeader
+		r *SFExpandedSampleHeader
 	}
-	testSampleHeader, _ := decodeSampleHeader(bytes.NewReader(TestSampleHeaderRawData))
+	testSampleHeader, _ := decodeExpandedSampleHeader(bytes.NewReader(TestSampleHeaderRawData))
 	tests := []struct {
 		name string
 		args args
@@ -546,30 +546,30 @@ func Test_SFExtSwitchDataTransInfo(t *testing.T) {
 	}
 }
 
-func Test_flowSampleDecode(t *testing.T) {
+func Test_flowExpandedSampleDecode(t *testing.T) {
 	var tran []SfTrans
 	type args struct {
 		r      io.ReadSeeker
 		length uint32
 	}
-	r := bytes.NewReader(TestFlowSampleDecodeRawData)
-	sh, _ := decodeSampleHeader(r)
-	sh.Tag = SFSampleTag
+	r := bytes.NewReader(TestflowExpandedSampleDecodeRawData)
+	sh, _ := decodeExpandedSampleHeader(r)
+	sh.Tag = SFExtSampleTag
 	sh.Length = 0xF4
 	tran = append(tran, sh)
 	r.Seek(int64(8), 1)
 	er, _ := decodeExtRouter(r)
-	er.Tag = SFExtRouterDataTag
+	er.Tag = SFExtRouterDataFormat
 	er.Length = 0x10
 	tran = append(tran, er)
 	r.Seek(int64(8), 1)
 	es, _ := decodeExtSwitch(r)
-	es.Tag = SFExtSwitchDataTag
+	es.Tag = SFExtSwitchDataFormat
 	es.Length = 0x10
 	tran = append(tran, es)
 	r.Seek(int64(8), 1)
 	ra, _ := decodeRawPacketHeader(r, 0x90)
-	ra.Tag = SFRawPacketTag
+	ra.Tag = SFRawPacketFormat
 	ra.Length = 0x90
 	tran = append(tran, ra)
 	tests := []struct {
@@ -581,7 +581,7 @@ func Test_flowSampleDecode(t *testing.T) {
 		{
 			name: "Test decode flow sample",
 			args: args{
-				r:      bytes.NewReader(TestFlowSampleDecodeRawData),
+				r:      bytes.NewReader(TestflowExpandedSampleDecodeRawData),
 				length: 0xF4,
 			},
 			want:    tran,
@@ -590,13 +590,13 @@ func Test_flowSampleDecode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := flowSampleDecode(tt.args.r, tt.args.length)
+			got, err := flowExpandedSampleDecode(tt.args.r, tt.args.length)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("flowSampleDecode() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("flowExpandedSampleDecode() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("flowSampleDecode() = %v, want %v", got, tt.want)
+				t.Errorf("flowExpandedSampleDecode() = %v, want %v", got, tt.want)
 			}
 		})
 	}
