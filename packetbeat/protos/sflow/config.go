@@ -8,7 +8,7 @@ import (
 
 type sflowConfig struct {
 	Ports              []int         `config:"ports"`
-	SampleType         []string      `config:"sample_type"`
+	SampleType         []int         `config:"sample_type"`
 	TransactionTimeout time.Duration `config:"transaction_timeout"`
 }
 

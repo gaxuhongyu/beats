@@ -65,7 +65,6 @@ func (sflow *sflowPlugin) setFromConfig(config *sflowConfig) error {
 	sflow.ports = config.Ports
 	sflow.sampleType = config.SampleType
 	sflow.transactionTimeout = config.TransactionTimeout
-	debugf("Sflow Plugin Config Info: %X", config)
 	return nil
 }
 
@@ -79,7 +78,7 @@ func (sflow *sflowPlugin) ParseUDP(pkt *protos.Packet) {
 	debugf("Parsing packet addressed with %s of length %d.", pkt.Tuple.String(), packetSize)
 	debugf("Sflow packet data: %X", pkt.Payload)
 	reader := bytes.NewReader(pkt.Payload)
-	d := NewSFDecoder(reader, pkt.Ts)
+	d := NewSFDecoder(reader, pkt.Ts, sflow.sampleType)
 	records, err := d.SFDecode()
 	if err != nil {
 		debugf("SFDecode decode error：%s", err.Error())

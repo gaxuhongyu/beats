@@ -17,8 +17,9 @@ type SfTrans interface {
 
 // SFDecoder represents sFlow decoder
 type SFDecoder struct {
-	reader io.ReadSeeker
-	t      time.Time
+	reader     io.ReadSeeker
+	t          time.Time
+	sampleType []int
 }
 
 // SFDatagram represents sFlow datagram
@@ -57,10 +58,11 @@ const (
 )
 
 // NewSFDecoder constructs new sflow decoder
-func NewSFDecoder(r io.ReadSeeker, t time.Time) SFDecoder {
+func NewSFDecoder(r io.ReadSeeker, t time.Time, stype []int) SFDecoder {
 	return SFDecoder{
-		reader: r,
-		t:      t,
+		reader:     r,
+		t:          t,
+		sampleType: stype,
 	}
 }
 
@@ -72,7 +74,15 @@ func (d *SFDecoder) SFDecode() ([]*SFTransaction, error) {
 		return nil, err
 	}
 	for i := uint32(0); i < datagram.SamplesNo; i++ {
-		trans, err := decodeSflowData(d.reader)
+		typeFormat, dataLength, err := getSampleInfo(d.reader)
+		if err != nil {
+			return nil, err
+		}
+		if m := d.isDecode(typeFormat); !m {
+			d.reader.Seek(int64(dataLength), 1)
+			continue
+		}
+		trans, err := decodeSflowData(d.reader, typeFormat, dataLength)
 		if err != nil {
 			return nil, err
 		}
@@ -83,21 +93,26 @@ func (d *SFDecoder) SFDecode() ([]*SFTransaction, error) {
 	return data, nil
 }
 
-// decodes sFlow body(include sample and counter info)
-func decodeSflowData(r io.ReadSeeker) (*SFTransaction, error) {
-	trans := &SFTransaction{}
-	sfTypeFormat, sfDataLength, err := getSampleInfo(r)
-	if err != nil {
-		return nil, err
+func (d *SFDecoder) isDecode(formart uint32) bool {
+	for _, v := range d.sampleType {
+		if uint32(v) == formart {
+			return true
+		}
 	}
+	return false
+}
 
-	switch sfTypeFormat {
+// decodes sFlow body(include sample and counter info)
+func decodeSflowData(r io.ReadSeeker, tag, length uint32) (*SFTransaction, error) {
+	trans := &SFTransaction{}
+
+	switch tag {
 	case SFSampleTag:
-		r.Seek(int64(sfDataLength), 1)
+		r.Seek(int64(length), 1)
 	case SFCounterTag:
-		r.Seek(int64(sfDataLength), 1)
+		r.Seek(int64(length), 1)
 	case SFExtSampleTag:
-		h, err := flowExpandedSampleDecode(r, sfDataLength)
+		h, err := flowExpandedSampleDecode(r, length)
 		if err != nil {
 			debugf("flowExpandedSampleDecode Decode Error:%s", err.Error())
 			return nil, err
@@ -105,9 +120,9 @@ func decodeSflowData(r io.ReadSeeker) (*SFTransaction, error) {
 		trans.data = h
 	case SFExtCounterTag:
 		debugf("Sflow Ext Counter data: %v", r)
-		r.Seek(int64(sfDataLength), 1)
+		r.Seek(int64(length), 1)
 	default:
-		r.Seek(int64(sfDataLength), 1)
+		r.Seek(int64(length), 1)
 	}
 	return trans, nil
 }
