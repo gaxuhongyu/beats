@@ -12,16 +12,17 @@ import (
 
 // SFSampleHeader Expanded Flow sample struct(http://www.sflow.org/developers/diagrams/sFlowV5Sample.pdf)
 type SFSampleHeader struct {
-	Tag        uint32 // must 1
-	Length     uint32
-	SequenceNo uint32 // Sequence of sFlow sample
-	SourceID   uint32 // source id type 0=ifIndex|1=smonVlanDataSource|2=entPhysicalEntry
-	SampleRate uint32 // sample rate
-	SamplePool uint32 // sample pool packet total count
-	Drops      uint32 // drop count
-	Input      uint32 // SNMP ifIndex of input interface, 0 if not known
-	Output     uint32 // SNMP ifIndex of output interface, 0 if not known
-	SamplesNo  uint32 // Number of flow samples
+	Tag           uint32 // must 1
+	Length        uint32
+	SequenceNo    uint32 // Sequence of sFlow sample
+	SourceIDType  uint32 // source id type 0=ifIndex|1=smonVlanDataSource|2=entPhysicalEntry
+	SourceIDIndex uint32 // source id index value
+	SampleRate    uint32 // sample rate
+	SamplePool    uint32 // sample pool packet total count
+	Drops         uint32 // drop count
+	Input         uint32 // SNMP ifIndex of input interface, 0 if not known
+	Output        uint32 // SNMP ifIndex of output interface, 0 if not known
+	SamplesNo     uint32 // Number of flow samples
 }
 
 // SFExpandedSampleHeader Expanded Flow sample struct
@@ -91,6 +92,16 @@ type SFIPv6Data struct {
 	Priority    uint32 // ip priority
 }
 
+// SFExtSwitchData Extended Vlan priority data
+type SFExtSwitchData struct {
+	Tag             uint32 // must 1001
+	Length          uint32 // total struct length not include Tag and Length
+	SrcVlanID       uint32 // in vlan id
+	SrcVlanPriority uint32 // in vlan priority
+	DstVlanID       uint32 // out vlan id
+	DstVlanPriority uint32 // out vlan priority
+}
+
 // SFExtRouterData Extended router data
 type SFExtRouterData struct {
 	Tag        uint32 // must 1002
@@ -101,14 +112,116 @@ type SFExtRouterData struct {
 	DstMaskLen uint32 // Dst ip mask length
 }
 
-// SFExtSwitchData Extended Vlan priority data
-type SFExtSwitchData struct {
-	Tag             uint32 // must 1001
+// SFGatewayAsPath ext gateway as path
+type SFGatewayAsPath struct {
+	PathType uint32   // path segment type (1=set/unordered|2=sequence/ordered)
+	Length   uint32   // length of as list
+	AsNumber []uint32 // as number
+}
+
+// SFExtGatewayData Extended router data
+type SFExtGatewayData struct {
+	Tag            uint32             // must 1003
+	Length         uint32             // total struct length not include Tag and Length
+	IPVersion      uint32             // IP version 1-IPv4 ,2-IPv6 not support IPv6
+	NextHop        net.IP             // next hop ip address v4=4byte|v6=16byte
+	AsRouterNo     uint32             // as number of router
+	AsSourceNo     uint32             // as number of source
+	AsSourceNoPeer uint32             // as number of source peer
+	DsetPathNo     uint32             // dest as paths no
+	AsPath         []*SFGatewayAsPath // as path
+	LenCommunities uint32             // length communities list
+	communities    []uint32           // n * int communities
+	LocalPref      uint32             // LocalPref
+}
+
+// SFExtUserData extended data user+charset
+type SFExtUserData struct {
+	Tag           uint32 // must 1004
+	Length        uint32 // total struct length not include Tag and Length
+	SourceCharset uint32 // source charset
+	LenSourceUser uint32 // length source user string
+	SourceUser    []byte // string source user
+	DestCharset   uint32 // destination charset
+	LenDestUser   uint32 // length destination user string
+	DestUser      []byte // string destination user
+}
+
+// SFExtURLData extended url user+host
+type SFExtURLData struct {
+	Tag        uint32 // must 1005
+	Length     uint32 // total struct length not include Tag and Length
+	Direction  uint32 // 1=src|2=dest
+	LengthURL  uint32 // URL length
+	URLString  []byte // URL data
+	LengthHost uint32 // host length
+	HostString []byte // host data
+}
+
+// SFExtMPLSData Extended MPLS Data
+type SFExtMPLSData struct {
+	Tag           uint32 // must 1006
+	Length        uint32 // total struct length not include Tag and Length
+	IPVersion     uint32 // IP version of next hop router (1=v4|2=v6)
+	NextHop       net.IP // IP address next hop router (v4=4byte|v6=16byte)
+	InLabelCount  uint32 // n in label stack count
+	InLabel       []byte // n in label stack data
+	OutLabelCount uint32 // Out label stack count
+	OutLabel      []byte // out label stack data
+}
+
+// SFExtNATData Extended MPLS Data
+type SFExtNATData struct {
+	Tag             uint32 // must 1007
 	Length          uint32 // total struct length not include Tag and Length
-	SrcVlanID       uint32 // in vlan id
-	SrcVlanPriority uint32 // in vlan priority
-	DstVlanID       uint32 // out vlan id
-	DstVlanPriority uint32 // out vlan priority
+	SourceIPVersion uint32 // IP version of source address (1=v4|2=v6)
+	SourceIPAddr    net.IP // IP address source address (v4=4byte|v6=16byte)
+	DestIPVersion   uint32 // IP version of destination address (1=v4|2=v6)
+	DestIPAddr      net.IP // IP address destination address (v4=4byte|v6=16byte)
+}
+
+// SFExtMPLSTunnel Extended MPLS Tunnel
+type SFExtMPLSTunnel struct {
+	Tag           uint32 // must 1008
+	Length        uint32 // total struct length not include Tag and Length
+	TunnelNameLen uint32 // tunnel name length
+	TunnelName    []byte // tunnel name
+	TunnelID      uint32 // tunnel id
+	TunnelCos     uint32 // tunnel cos value
+}
+
+// SFExtMPLSVC Extended MPLS VC
+type SFExtMPLSVC struct {
+	Tag               uint32 // must 1009
+	Length            uint32 // total struct length not include Tag and Length
+	VcInstanceNameLen uint32 // length vc instance name
+	VcInstanceName    []byte // string vc instance name
+	VcID              uint32 // int vll/vc id
+	VcLabelCos        uint32 // tunnel cos value
+}
+
+// SFExtMPLSFEC Extended MPLS FEC
+type SFExtMPLSFEC struct {
+	Tag             uint32 // must 1010
+	Length          uint32 // total struct length not include Tag and Length
+	MplsFTNDescrLen uint32 // mplsFTNDescr length
+	MplsFTNDescr    []byte // mplsFTNDescr
+	MplsFTNMask     uint32 // mplsFTNMask
+}
+
+// SFExtMPLSLvpFec Extended MPLS FEC
+type SFExtMPLSLvpFec struct {
+	Tag                     uint32 // must 1011
+	Length                  uint32 // total struct length not include Tag and Length
+	MplsFecAddrPrefixLength uint32 // mplsFecAddrPrefixLength
+}
+
+// SFExtVlanTunnel Extended MPLS FEC
+type SFExtVlanTunnel struct {
+	Tag       uint32   // must 1012
+	Length    uint32   // total struct length not include Tag and Length
+	LayerLen  uint32   // n layer stack
+	LayerData []uint32 // layer
 }
 
 const (
@@ -175,15 +288,18 @@ func flowSampleDecode(r io.ReadSeeker, length uint32) ([]SfTrans, error) {
 
 func decodeSampleHeader(r io.ReadSeeker) (*SFSampleHeader, error) {
 	var (
-		sh  = &SFSampleHeader{}
-		err error
+		sh   = &SFSampleHeader{}
+		temp uint32
+		err  error
 	)
 	if err = read(r, &sh.SequenceNo); err != nil {
 		return nil, err
 	}
-	if err = read(r, &sh.SourceID); err != nil {
+	if err = read(r, &temp); err != nil {
 		return nil, err
 	}
+	sh.SourceIDType = temp >> 24
+	sh.SourceIDIndex = temp & 0x0FFF
 	if err = read(r, &sh.SampleRate); err != nil {
 		return nil, err
 	}
@@ -250,15 +366,6 @@ func decodeFlowRedord(r io.ReadSeeker) (SfTrans, error) {
 		ip.Length = len
 		debugf("Unpack SFIPV6DataFormat:%X", ip)
 		result = ip
-	case SFExtRouterDataFormat:
-		var er *SFExtRouterData
-		if er, err = decodeExtRouter(r); err != nil {
-			return nil, err
-		}
-		er.Tag = tag
-		er.Length = len
-		debugf("Unpack SFExtRouterData:%X", er)
-		result = er
 	case SFExtSwitchDataFormat:
 		var es *SFExtSwitchData
 		if es, err = decodeExtSwitch(r); err != nil {
@@ -268,6 +375,105 @@ func decodeFlowRedord(r io.ReadSeeker) (SfTrans, error) {
 		es.Length = len
 		debugf("Unpack SFExtSwitchData:%X", es)
 		result = es
+	case SFExtRouterDataFormat:
+		var er *SFExtRouterData
+		if er, err = decodeExtRouter(r); err != nil {
+			return nil, err
+		}
+		er.Tag = tag
+		er.Length = len
+		debugf("Unpack SFExtRouterData:%X", er)
+		result = er
+	case SFExtGatewayDataFormat:
+		var gw *SFExtGatewayData
+		if gw, err = decodeSFExtGatewayData(r); err != nil {
+			return nil, err
+		}
+		gw.Tag = tag
+		gw.Length = len
+		debugf("Unpack SFExtGatewayData:%X", gw)
+		result = gw
+	case SFExtUserDataFormat:
+		var user *SFExtUserData
+		if user, err = decodeSFExtUserData(r); err != nil {
+			return nil, err
+		}
+		user.Tag = tag
+		user.Length = len
+		debugf("Unpack SFExtUserData:%X", user)
+		result = user
+	case SFExtURLDataFormat:
+		var url *SFExtURLData
+		if url, err = decodeSFExtURLData(r); err != nil {
+			return nil, err
+		}
+		url.Tag = tag
+		url.Length = len
+		debugf("Unpack SFExtURLData:%X", url)
+		result = url
+	case SFExtMPLSDataFormat:
+		var mpls *SFExtMPLSData
+		if mpls, err = decodeSFExtMPLSData(r); err != nil {
+			return nil, err
+		}
+		mpls.Tag = tag
+		mpls.Length = len
+		debugf("Unpack SFExtMPLSData:%X", mpls)
+		result = mpls
+	case SFExtNATDataFormat:
+		var nat *SFExtNATData
+		if nat, err = decodeSFExtNATData(r); err != nil {
+			return nil, err
+		}
+		nat.Tag = tag
+		nat.Length = len
+		debugf("Unpack SFExtNATData:%X", nat)
+		result = nat
+	case SFExtMPLSTunnelFormat:
+		var tunnel *SFExtMPLSTunnel
+		if tunnel, err = decodeSFExtMPLSTunnel(r); err != nil {
+			return nil, err
+		}
+		tunnel.Tag = tag
+		tunnel.Length = len
+		debugf("Unpack SFExtMPLSTunnel:%X", tunnel)
+		result = tunnel
+	case SFExtMPLSVCFormat:
+		var vc *SFExtMPLSVC
+		if vc, err = decodeSFExtMPLSVC(r); err != nil {
+			return nil, err
+		}
+		vc.Tag = tag
+		vc.Length = len
+		debugf("Unpack SFExtMPLSVC:%X", vc)
+		result = vc
+	case SFExtMPLSSFECFormat:
+		var fec *SFExtMPLSFEC
+		if fec, err = decodeSFExtMPLSFEC(r); err != nil {
+			return nil, err
+		}
+		fec.Tag = tag
+		fec.Length = len
+		debugf("Unpack SFExtMPLSFEC:%X", fec)
+		result = fec
+	case SFExtMPLSLVPFECFormat:
+		var lvp *SFExtMPLSLvpFec
+		if lvp, err = decodeSFExtMPLSLvpFec(r); err != nil {
+			return nil, err
+		}
+		lvp.Tag = tag
+		lvp.Length = len
+		debugf("Unpack SFExtMPLSFEC:%X", lvp)
+		result = lvp
+	case SFExtVlanTunnelFormat:
+		var vlan *SFExtVlanTunnel
+		if vlan, err = decodeSFExtVlanTunnel(r); err != nil {
+			return nil, err
+		}
+		vlan.Tag = tag
+		vlan.Length = len
+		debugf("Unpack SFExtVlanTunnel:%X", vlan)
+		result = vlan
 	default:
 		r.Seek(int64(len), 1)
 		debugf("Not support tag :%d", tag)
@@ -275,7 +481,7 @@ func decodeFlowRedord(r io.ReadSeeker) (SfTrans, error) {
 	return result, nil
 }
 
-// TransInfo get SFExpandedSampleHeader trans info
+// TransInfo get SFSampleHeader trans info
 func (sh *SFSampleHeader) TransInfo(event common.MapStr) {
 	event["sequenceno"] = sh.SamplesNo
 	event["samplerate"] = sh.SampleRate
@@ -612,4 +818,357 @@ func (eh *SFIPv6Data) TransInfo(event common.MapStr) {
 	event["dstport"] = eh.DstPort
 	event["tcpflags"] = eh.TCPFlags
 	event["ipprotocol"] = eh.NextHeader
+}
+
+func decodeSFExtGatewayData(r io.ReadSeeker) (*SFExtGatewayData, error) {
+	var (
+		gw  = &SFExtGatewayData{}
+		len uint32
+		err error
+	)
+	if err = read(r, &gw.IPVersion); err != nil {
+		return nil, err
+	}
+	if gw.IPVersion == 1 {
+		len = 4
+	} else if gw.IPVersion == 2 {
+		len = 16
+	}
+	buff := make([]byte, len)
+	if _, err = r.Read(buff); err != nil {
+		return nil, err
+	}
+	gw.NextHop = buff
+	if err = read(r, &gw.AsRouterNo); err != nil {
+		return nil, err
+	}
+	if err = read(r, &gw.AsSourceNo); err != nil {
+		return nil, err
+	}
+	if err = read(r, &gw.AsSourceNoPeer); err != nil {
+		return nil, err
+	}
+	if err = read(r, &gw.DsetPathNo); err != nil {
+		return nil, err
+	}
+	for index := uint32(0); index < gw.DsetPathNo; index++ {
+		ap, e := decodeAsPath(r)
+		if e != nil {
+			return nil, e
+		}
+		gw.AsPath = append(gw.AsPath, ap)
+	}
+	if err = read(r, &gw.LenCommunities); err != nil {
+		return nil, err
+	}
+	for index := uint32(0); index < gw.LenCommunities; index++ {
+		var temp uint32
+		if err = read(r, &temp); err != nil {
+			return nil, err
+		}
+		gw.communities = append(gw.communities, temp)
+	}
+	if err = read(r, &gw.LocalPref); err != nil {
+		return nil, err
+	}
+	return gw, nil
+}
+
+func decodeAsPath(r io.ReadSeeker) (*SFGatewayAsPath, error) {
+	var (
+		ap  = &SFGatewayAsPath{}
+		err error
+	)
+	if err = read(r, &ap.PathType); err != nil {
+		return nil, err
+	}
+	if err = read(r, &ap.Length); err != nil {
+		return nil, err
+	}
+	for index := uint32(0); index < ap.Length; index++ {
+		var temp uint32
+		if err = read(r, &temp); err != nil {
+			return nil, err
+		}
+		ap.AsNumber = append(ap.AsNumber, temp)
+	}
+	return ap, nil
+}
+
+// TransInfo get SFExtGatewayData data trans info
+func (gw *SFExtGatewayData) TransInfo(event common.MapStr) {
+	// event["srcip"] = eh.SrcIP
+	// event["dstip"] = eh.DstIP
+	// event["srcport"] = eh.SrcPort
+	// event["dstport"] = eh.DstPort
+	// event["tcpflags"] = eh.TCPFlags
+	// event["ipprotocol"] = eh.NextHeader
+}
+
+func decodeSFExtUserData(r io.ReadSeeker) (*SFExtUserData, error) {
+	var (
+		eu  = &SFExtUserData{}
+		err error
+	)
+	if err = read(r, &eu.SourceCharset); err != nil {
+		return nil, err
+	}
+	if err = read(r, &eu.LenDestUser); err != nil {
+		return nil, err
+	}
+	buff1 := make([]byte, eu.LenDestUser)
+	if _, err = r.Read(buff1); err != nil {
+		return nil, err
+	}
+	eu.SourceUser = buff1
+	if err = read(r, &eu.DestCharset); err != nil {
+		return nil, err
+	}
+	if err = read(r, &eu.LenDestUser); err != nil {
+		return nil, err
+	}
+	buff2 := make([]byte, eu.LenDestUser)
+	if _, err = r.Read(buff2); err != nil {
+		return nil, err
+	}
+	eu.DestUser = buff2
+	return eu, nil
+}
+
+// TransInfo get SFExtUserData data trans info
+func (gw *SFExtUserData) TransInfo(event common.MapStr) {
+	// event["srcip"] = eh.SrcIP
+	// event["dstip"] = eh.DstIP
+	// event["srcport"] = eh.SrcPort
+	// event["dstport"] = eh.DstPort
+	// event["tcpflags"] = eh.TCPFlags
+	// event["ipprotocol"] = eh.NextHeader
+}
+
+func decodeSFExtURLData(r io.ReadSeeker) (*SFExtURLData, error) {
+	var (
+		url = &SFExtURLData{}
+		err error
+	)
+	if err = read(r, &url.Direction); err != nil {
+		return nil, err
+	}
+	if err = read(r, &url.LengthURL); err != nil {
+		return nil, err
+	}
+	buff1 := make([]byte, url.LengthURL)
+	if _, err = r.Read(buff1); err != nil {
+		return nil, err
+	}
+	url.URLString = buff1
+	if err = read(r, &url.LengthHost); err != nil {
+		return nil, err
+	}
+	buff2 := make([]byte, url.LengthHost)
+	if _, err = r.Read(buff2); err != nil {
+		return nil, err
+	}
+	url.HostString = buff2
+	return url, nil
+}
+
+// TransInfo get SFExtURLData data trans info
+func (gw *SFExtURLData) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtMPLSData(r io.ReadSeeker) (*SFExtMPLSData, error) {
+	var (
+		mpls = &SFExtMPLSData{}
+		len  = 4
+		err  error
+	)
+	if err = read(r, &mpls.IPVersion); err != nil {
+		return nil, err
+	}
+	if mpls.IPVersion == 2 {
+		len = 16
+	}
+	buff := make([]byte, len)
+	if _, err = r.Read(buff); err != nil {
+		return nil, err
+	}
+	mpls.NextHop = buff
+	if err = read(r, &mpls.InLabelCount); err != nil {
+		return nil, err
+	}
+	buff1 := make([]byte, mpls.InLabelCount)
+	if _, err = r.Read(buff1); err != nil {
+		return nil, err
+	}
+	mpls.InLabel = buff1
+	if err = read(r, &mpls.OutLabelCount); err != nil {
+		return nil, err
+	}
+	buff2 := make([]byte, mpls.OutLabelCount)
+	if _, err = r.Read(buff2); err != nil {
+		return nil, err
+	}
+	mpls.OutLabel = buff2
+	return mpls, nil
+}
+
+// TransInfo get SFExtMPLSData data trans info
+func (gw *SFExtMPLSData) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtNATData(r io.ReadSeeker) (*SFExtNATData, error) {
+	var (
+		nat = &SFExtNATData{}
+		len = 4
+		err error
+	)
+	if err = read(r, &nat.SourceIPVersion); err != nil {
+		return nil, err
+	}
+	if nat.SourceIPVersion == 2 {
+		len = 16
+	}
+	buff := make([]byte, len)
+	if _, err = r.Read(buff); err != nil {
+		return nil, err
+	}
+	nat.SourceIPAddr = buff
+	if err = read(r, &nat.DestIPVersion); err != nil {
+		return nil, err
+	}
+	if nat.DestIPVersion == 1 {
+		len = 4
+	} else if nat.DestIPVersion == 2 {
+		len = 16
+	}
+	buff1 := make([]byte, len)
+	if _, err = r.Read(buff1); err != nil {
+		return nil, err
+	}
+	nat.DestIPAddr = buff
+	return nat, nil
+}
+
+// TransInfo get SFExtNATData data trans info
+func (gw *SFExtNATData) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtMPLSTunnel(r io.ReadSeeker) (*SFExtMPLSTunnel, error) {
+	var (
+		tunnel = &SFExtMPLSTunnel{}
+		err    error
+	)
+	if err = read(r, &tunnel.TunnelNameLen); err != nil {
+		return nil, err
+	}
+	buff := make([]byte, tunnel.TunnelNameLen)
+	if _, err = r.Read(buff); err != nil {
+		return nil, err
+	}
+	tunnel.TunnelName = buff
+	if err = read(r, &tunnel.TunnelID); err != nil {
+		return nil, err
+	}
+	if err = read(r, &tunnel.TunnelCos); err != nil {
+		return nil, err
+	}
+	return tunnel, nil
+}
+
+// TransInfo get SFExtMPLSTunnel data trans info
+func (gw *SFExtMPLSTunnel) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtMPLSVC(r io.ReadSeeker) (*SFExtMPLSVC, error) {
+	var (
+		vc  = &SFExtMPLSVC{}
+		err error
+	)
+	if err = read(r, &vc.VcInstanceNameLen); err != nil {
+		return nil, err
+	}
+	buff := make([]byte, vc.VcInstanceNameLen)
+	if _, err = r.Read(buff); err != nil {
+		return nil, err
+	}
+	vc.VcInstanceName = buff
+	if err = read(r, &vc.VcID); err != nil {
+		return nil, err
+	}
+	if err = read(r, &vc.VcLabelCos); err != nil {
+		return nil, err
+	}
+	return vc, nil
+}
+
+// TransInfo get SFExtMPLSVC data trans info
+func (vc *SFExtMPLSVC) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtMPLSFEC(r io.ReadSeeker) (*SFExtMPLSFEC, error) {
+	var (
+		fec = &SFExtMPLSFEC{}
+		err error
+	)
+	if err = read(r, &fec.MplsFTNDescrLen); err != nil {
+		return nil, err
+	}
+	buff := make([]byte, fec.MplsFTNDescrLen)
+	if _, err = r.Read(buff); err != nil {
+		return nil, err
+	}
+	fec.MplsFTNDescr = buff
+	if err = read(r, &fec.MplsFTNMask); err != nil {
+		return nil, err
+	}
+	return fec, nil
+}
+
+// TransInfo get SFExtMPLSFEC data trans info
+func (vc *SFExtMPLSFEC) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtMPLSLvpFec(r io.ReadSeeker) (*SFExtMPLSLvpFec, error) {
+	var (
+		lvp = &SFExtMPLSLvpFec{}
+		err error
+	)
+	if err = read(r, &lvp.MplsFecAddrPrefixLength); err != nil {
+		return nil, err
+	}
+	return lvp, nil
+}
+
+// TransInfo get SFExtMPLSLvpFec data trans info
+func (vc *SFExtMPLSLvpFec) TransInfo(event common.MapStr) {
+
+}
+
+func decodeSFExtVlanTunnel(r io.ReadSeeker) (*SFExtVlanTunnel, error) {
+	var (
+		layer = &SFExtVlanTunnel{}
+		err   error
+	)
+	if err = read(r, &layer.LayerLen); err != nil {
+		return nil, err
+	}
+	for index := uint32(0); index < layer.LayerLen; index++ {
+		var temp uint32
+		if err = read(r, &temp); err != nil {
+			return nil, err
+		}
+		layer.LayerData = append(layer.LayerData, temp)
+	}
+	return layer, nil
+}
+
+// TransInfo get SFExtVlanTunnel data trans info
+func (vc *SFExtVlanTunnel) TransInfo(event common.MapStr) {
+
 }

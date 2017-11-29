@@ -104,15 +104,25 @@ func (d *SFDecoder) isDecode(formart uint32) bool {
 
 // decodes sFlow body(include sample and counter info)
 func decodeSflowData(r io.ReadSeeker, tag, length uint32) (*SFTransaction, error) {
-	trans := &SFTransaction{}
+	var (
+		trans *SFTransaction
+		h     []SfTrans
+		err   error
+	)
 
 	switch tag {
 	case SFSampleTag:
 		r.Seek(int64(length), 1)
+		h, err = flowSampleDecode(r, length)
+		if err != nil {
+			debugf("flowSampleDecode Decode Error:%s", err.Error())
+			return nil, err
+		}
+		trans.data = h
 	case SFCounterTag:
 		r.Seek(int64(length), 1)
 	case SFExtSampleTag:
-		h, err := flowExpandedSampleDecode(r, length)
+		h, err = flowExpandedSampleDecode(r, length)
 		if err != nil {
 			debugf("flowExpandedSampleDecode Decode Error:%s", err.Error())
 			return nil, err
