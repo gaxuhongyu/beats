@@ -278,7 +278,7 @@ func flowSampleDecode(r io.ReadSeeker, length uint32) ([]SfTrans, error) {
 	sampleHeader.Length = length
 	data = append(data, sampleHeader)
 	for i := uint32(0); i < sampleHeader.SamplesNo; i++ {
-		if record, err = decodeFlowRedord(r); err != nil {
+		if record, err = decodeFlowRecord(r); err != nil {
 			return nil, err
 		}
 		data = append(data, record)
@@ -322,7 +322,7 @@ func decodeSampleHeader(r io.ReadSeeker) (*SFSampleHeader, error) {
 	return sh, nil
 }
 
-func decodeFlowRedord(r io.ReadSeeker) (SfTrans, error) {
+func decodeFlowRecord(r io.ReadSeeker) (SfTrans, error) {
 	var result SfTrans
 	tag, len, err := getSampleInfo(r)
 	if err != nil {
@@ -507,7 +507,7 @@ func flowExpandedSampleDecode(r io.ReadSeeker, length uint32) ([]SfTrans, error)
 	expSampleHeader.Length = length
 	data = append(data, expSampleHeader)
 	for i := uint32(0); i < expSampleHeader.SamplesNo; i++ {
-		if record, err = decodeFlowRedord(r); err != nil {
+		if record, err = decodeFlowRecord(r); err != nil {
 			return nil, err
 		}
 		data = append(data, record)
