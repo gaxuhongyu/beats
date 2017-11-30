@@ -106,7 +106,7 @@ func (d *SFDecoder) isDecode(formart uint32) bool {
 // decodes sFlow body(include sample and counter info)
 func decodeSflowData(r io.ReadSeeker, tag, length uint32) (*SFTransaction, error) {
 	var (
-		trans *SFTransaction
+		trans = &SFTransaction{}
 		h     []SfTrans
 		err   error
 	)
