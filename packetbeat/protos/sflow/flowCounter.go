@@ -144,7 +144,8 @@ const (
 )
 
 var (
-	errCounterTag = errors.New("counter tag error, must 2 or 4")
+	errCounterTag    = errors.New("counter tag error, must 2 or 4")
+	errCounterRecord = errors.New("counter record data error")
 )
 
 func counterSampleDecode(r io.ReadSeeker, tag, length uint32) ([]SfTrans, error) {
@@ -196,6 +197,7 @@ func decodeCounterSampleHeader(r io.ReadSeeker, tag uint32) (*SFCounterSampleHea
 	if err = read(r, &csh.SamplesNo); err != nil {
 		return nil, err
 	}
+	debugf("Unpack SFCounterSampleHeader:%X", csh)
 	return csh, nil
 }
 
@@ -267,6 +269,7 @@ func decodeCounterRecord(r io.ReadSeeker) (SfTrans, error) {
 	default:
 		r.Seek(int64(len), 1)
 		debugf("Not support tag :%d", tag)
+		return nil, errCounterRecord
 	}
 	return result, nil
 }

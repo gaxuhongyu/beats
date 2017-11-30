@@ -41,8 +41,9 @@ type SFTransaction struct {
 }
 
 var (
-	errDataLengthUnknown   = errors.New("the sflow data length is unknown")
-	errSFVersionNotSupport = errors.New("the sflow version doesn't support")
+	errDataLengthUnknown      = errors.New("the sflow data length is unknown")
+	errSFVersionNotSupport    = errors.New("the sflow version doesn't support")
+	errNotSupportSampleFormat = errors.New("the Sample format does't support")
 )
 
 //Spec http://www.sflow.org/developers/diagrams/sFlowV5Sample.pdf
@@ -134,6 +135,8 @@ func decodeSflowData(r io.ReadSeeker, tag, length uint32) (*SFTransaction, error
 		trans.data = h
 	default:
 		r.Seek(int64(length), 1)
+		debugf("Not support sample format :%d", tag)
+		return nil, errNotSupportSampleFormat
 	}
 	return trans, nil
 }
