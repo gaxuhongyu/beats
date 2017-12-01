@@ -187,6 +187,16 @@ func decodeSflowHeader(r io.ReadSeeker) (*SFDatagram, error) {
 	return datagram, nil
 }
 
+// TransInfo get SFSampleHeader trans info
+func (dg *SFDatagram) TransInfo(event common.MapStr) {
+	event["version"] = dg.Version
+	event["ip_version"] = dg.IPVersion
+	event["agent"] = dg.AgentAddress
+	event["sub_agent"] = dg.AgentSubID
+	event["sequence"] = dg.SequenceNo
+	event["uptime"] = dg.SysUpTime
+}
+
 func getSampleInfo(r io.ReadSeeker) (uint32, uint32, error) {
 	var (
 		sfTypeFormat uint32

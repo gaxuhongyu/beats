@@ -1,0 +1,161 @@
+- key: sflow
+  title: "Sflow"
+  description: >
+    Sflow-specific event fields.
+  fields:
+    - name: sflow
+      type: group
+      fields:
+        - name: version
+          description: >
+            Sflow version(2|4|5)
+
+        - name: ip_version
+          description: >
+            IP version of the Agent / Switch (1=v4|2=v6)
+        
+        - name: agent
+          description: >
+            Agent IP address (v4|v6)
+
+        - name: sub_agent
+          description: >
+            Sflow sub agent id
+
+        - name: sequence
+          description: >         
+            Sflow datagram sequence number
+        
+        - name: uptime
+          description: >         
+            switch uptime in ms
+
+        - name: sample
+          type: group
+          description: >         
+            The sample is contain Flow sample|Counter Sample|Expanded Flow Sample|Expanded Counter Sample
+          fields:
+            - name: format
+              description: >
+                The format is mark sflow sample type:1=Flow sample|
+                2=Counter Sample|3=Expanded Flow Sample|4=Expanded Counter Sample
+
+            - name: sequence
+              description: >
+                sample sequence number
+            
+            - name: type
+              description: >
+                source id type(0=ifIndex|1=smonVlanDataSource|2=entPhysicalEntry)
+            
+            - name: index
+              description: >
+                source id index
+
+            - name: rate
+              description: >
+                sampling rate
+            
+            - name: pool
+              description: >
+                total number of packets that could have been sampled
+            
+            - name: drops
+              description: >
+                packets dropped due to a lack of resources
+            
+            - name: input_interface_format
+              description: >
+                SNMP ifIndex of input interface format, 0 if not known
+
+            - name: input_interface_value
+              description: >
+                SNMP ifIndex of input interface
+
+            - name: output_interface_format
+              description: >
+                SNMP ifIndex of output interface format, 0 if not known
+
+            - name: output_interface_value
+              description: >
+                SNMP ifIndex of output interface, 0 if not known.
+                broadcast or multicast are handled as follows:the 
+                first bit indicates multiple destinations, the lower 
+                order bits number of interfaces  
+            - name: raw
+              description: >
+                raw packet header
+              fields:
+                - name: header_protocol
+                  description: >
+                    raw packet protocol(1=ethernet, .... 11=IPv4, 12=IPv6)
+                
+                - name: frame_length
+                  description: >
+                    length before sampling                 
+                
+                - name: stripped
+                  description: >
+                    number of bytes removed from the packet
+                
+                - name: header_size
+                  description: >
+                    sample header size(bytes)
+            
+            - name: ethernet
+              description: >
+                ethernet frame data
+              fields:
+                - name: length
+                  description: >
+                    length (of the mac packet)
+                
+                - name: src_mac
+                  description: >
+                    source MAC address                 
+                
+                - name: dest_mac
+                  description: >
+                    dest MAC address
+                
+                - name: type
+                  description: >
+                    ethernet packet type
+            
+            - name: ipv4
+              description: >
+                ipv4 packet data
+              fields:
+                - name: length
+                  description: >
+                    packet length
+                
+                - name: ip_protocol
+                  description: >
+                    ip protocol 6=tcp|17=udp                 
+                
+                - name: src_ip
+                  description: >
+                    source ip address
+                
+                - name: dest_ip
+                  description: >
+                    dest ip address
+
+                - name: src_port
+                  description: >
+                    source port
+                
+                - name: dest port
+                  description: >
+                    dest port
+                
+                - name: tcp_flags
+                  description: >
+                    tcp flags
+
+                - name: type_of_service
+                  description: >
+                    type of service
+
+                

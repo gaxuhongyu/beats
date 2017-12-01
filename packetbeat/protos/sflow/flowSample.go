@@ -483,13 +483,19 @@ func decodeFlowRecord(r io.ReadSeeker) (SfTrans, error) {
 
 // TransInfo get SFSampleHeader trans info
 func (sh *SFSampleHeader) TransInfo(event common.MapStr) {
-	event["sequenceno"] = sh.SamplesNo
-	event["samplerate"] = sh.SampleRate
-	event["samplepool"] = sh.SamplePool
-	event["drops"] = sh.Drops
-	event["inputindex"] = sh.Input
-	event["outputindex"] = sh.Output
-	event["flowsrecords"] = sh.SampleRate
+	e := common.MapStr{
+		"format":                 sh.Tag,
+		"sequence":               sh.SequenceNo,
+		"type":                   sh.SourceIDType,
+		"index":                  sh.SourceIDIndex,
+		"rate":                   sh.SampleRate,
+		"pool":                   sh.SamplePool,
+		"drops":                  sh.Drops,
+		"input_interface_value":  sh.Input,
+		"output_interface_value": sh.Output,
+	}
+
+	event["sample"] = e
 }
 
 func flowExpandedSampleDecode(r io.ReadSeeker, length uint32) ([]SfTrans, error) {
@@ -559,15 +565,20 @@ func decodeExpandedSampleHeader(r io.ReadSeeker) (*SFExpandedSampleHeader, error
 
 // TransInfo get SFExpandedSampleHeader trans info
 func (sh *SFExpandedSampleHeader) TransInfo(event common.MapStr) {
-	event["sequenceno"] = sh.SamplesNo
-	event["samplerate"] = sh.SampleRate
-	event["samplepool"] = sh.SamplePool
-	event["drops"] = sh.Drops
-	event["inputformat"] = sh.InputFormat
-	event["inputindex"] = sh.InputIndex
-	event["outputformat"] = sh.OutputFormat
-	event["outputindex"] = sh.OutputIndex
-	event["flowsrecords"] = sh.SampleRate
+	e := common.MapStr{
+		"format":                  sh.Tag,
+		"sequence":                sh.SequenceNo,
+		"type":                    sh.DSClass,
+		"index":                   sh.DSIndex,
+		"rate":                    sh.SampleRate,
+		"pool":                    sh.SamplePool,
+		"drops":                   sh.Drops,
+		"input_interface_format":  sh.InputFormat,
+		"input_interface_value":   sh.InputIndex,
+		"output_interface_format": sh.OutputFormat,
+		"output_interface_value":  sh.OutputIndex,
+	}
+	event["sample"] = e
 }
 
 func decodeRawPacketHeader(r io.ReadSeeker, length uint32) (*SFRawPacketHeader, error) {
