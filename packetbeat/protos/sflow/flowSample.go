@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/VerizonDigital/vflow/packet"
+
 	"github.com/elastic/beats/libbeat/common"
 )
 
