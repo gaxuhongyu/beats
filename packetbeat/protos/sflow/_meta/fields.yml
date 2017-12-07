@@ -81,48 +81,96 @@
                 SNMP ifIndex of output interface, 0 if not known.
                 broadcast or multicast are handled as follows:the 
                 first bit indicates multiple destinations, the lower 
-                order bits number of interfaces  
-            - name: raw
+                order bits number of interfaces
+
+        - name: raw
+          type: group        
+          description: >
+            raw packet header
+          fields:
+            - name: header_protocol
               description: >
-                raw packet header
-              fields:
-                - name: header_protocol
-                  description: >
-                    raw packet protocol(1=ethernet, .... 11=IPv4, 12=IPv6)
-                
-                - name: frame_length
-                  description: >
-                    length before sampling                 
-                
-                - name: stripped
-                  description: >
-                    number of bytes removed from the packet
-                
-                - name: header_size
-                  description: >
-                    sample header size(bytes)
+                raw packet protocol(1=ethernet, .... 11=IPv4, 12=IPv6)
             
-            - name: ethernet
+            - name: frame_length
               description: >
-                ethernet frame data
-              fields:
-                - name: length
-                  description: >
-                    length (of the mac packet)
-                
-                - name: src_mac
-                  description: >
-                    source MAC address                 
-                
-                - name: dest_mac
-                  description: >
-                    dest MAC address
-                
-                - name: type
-                  description: >
-                    ethernet packet type
+                length before sampling                 
             
-            - name: ipv4
+            - name: stripped
+              description: >
+                number of bytes removed from the packet
+            
+            - name: header_size
+              description: >
+                sample header size(bytes)
+
+            - name: vlan_id
+              description: >
+                from raw packet header decode vlan id
+
+            - name: ethernet_type
+              description: >
+                from datalink layer raw data ethernet type
+            
+            - name: ip_version
+              description: >
+                layer 3 packet header ip version
+
+            - name: tos
+              description: >
+                layer 3 type of service
+            
+            - name: ttl
+              description: >
+                layer 3 time to live
+            
+            - name: ip_protocol
+              description: >
+                layer 3 header protocol(1=ICMP|6=TCP|17=UDP)
+            
+            - name: src_ip
+              description: >
+                source ip address
+
+            - name: dst_ip
+              description: >
+                destination ip address
+
+            - name: icmp_type
+              description: >
+                layer 4 icmp protocol type
+            
+            - name: icmp_code
+              description: >
+                layer 4 icmp protocol code
+
+            - name: src_port
+              description: >
+                layer 4 source port
+
+            - name: dst_port
+              description: >
+                layer 4 destination port
+
+            - name: tcp_flags
+              description: >
+                layer 4 tcp flags only TCP protocol hava exist this falgs
+            
+        - name: ethernet
+          type: group          
+          description: >
+            ethernet frame data
+          fields:            
+            - name: src_mac
+              description: >
+                source MAC address                 
+            
+            - name: dest_mac
+              description: >
+                dest MAC address
+        
+        - name: ipv4
+          type: group          
               description: >
                 ipv4 packet data
               fields:
@@ -140,22 +188,319 @@
                 
                 - name: dest_ip
                   description: >
-                    dest ip address
+                    destination ip address
 
                 - name: src_port
                   description: >
                     source port
                 
-                - name: dest port
+                - name: dst_port
                   description: >
-                    dest port
+                    destination port
                 
                 - name: tcp_flags
                   description: >
                     tcp flags
 
-                - name: type_of_service
+                - name: tos
                   description: >
                     type of service
 
+        - name: ipv6
+          type: group          
+              description: >
+                ipv6 packet data
+              fields:
+                - name: length
+                  description: >
+                    ipv6 packet length
                 
+                - name: ip_protocol
+                  description: >
+                    ip protocol 6=tcp|17=udp                 
+                
+                - name: src_ip
+                  description: >
+                    source ip address
+                
+                - name: dest_ip
+                  description: >
+                    destination ip address
+
+                - name: src_port
+                  description: >
+                    source port
+                
+                - name: dst_port
+                  description: >
+                    destination port
+                
+                - name: tcp_flags
+                  description: >
+                    tcp flags
+
+                - name: priority
+                  description: >
+                    ip priority
+
+        - name: switch
+          type: group          
+              description: >
+                extended data switch
+              fields:
+                - name: src_vlan
+                  description: >
+                    source vlan 
+                
+                - name: src_priority
+                  description: >
+                    source priority
+
+                - name: dst_vlan
+                  description: >
+                    destination vlan
+
+                - name: dst_priority
+                  description: >
+                    destination priority                                  
+
+        - name: router
+          type: group          
+              description: >
+                extended data router
+              fields:
+                - name: ip_version
+                  description: >
+                    IP version of next hop router (1=v4|2=v6) 
+                
+                - name: next_hop
+                  description: >
+                    IP address next hop router (v4=4byte|v6=16byte)
+
+                - name: src_mask_len
+                  description: >
+                    source router mask length
+
+                - name: dst_mask_len
+                  description: >
+                    destination router mask length
+
+        - name: gateway
+          type: group          
+              description: >
+                extended data gateway +nexthop router ip
+              fields:
+                - name: ip_version
+                  description: >
+                    IP version of next hop router (1=v4|2=v6) 
+                
+                - name: next_hop
+                  description: >
+                    IP address next hop router (v4=4byte|v6=16byte)
+
+                - name: as_router_no
+                  description: >
+                    as number of router
+
+                - name: as_source_no
+                  description: >
+                    as number of source
+
+                - name: as_source_peer
+                  description: >
+                    as number of source peer
+
+                - name: local_pref
+                  description: >
+                    local pref                                   
+
+        - name: user
+          type: group          
+              description: >
+                extended data user+charset
+              fields:
+                - name: src_charset
+                  description: >
+                    source charset
+                
+                - name: src_user_len
+                  description: >
+                    length source user string
+
+                - name: src_user
+                  type: text
+                  description: >
+                    as number of router
+
+                - name: dst_charset
+                  description: >
+                    destination charset
+
+                - name: dst_user_len
+                  description: >
+                    as length destination user string
+
+                - name: dst_user
+                  type: text
+                  description: >
+                    string destination user                                  
+
+        - name: url
+          type: group          
+              description: >
+                extended url user+host
+              fields:
+                - name: direction
+                  description: >
+                    direction (1=src|2=dest)
+                
+                - name: url_len
+                  description: >
+                    length url
+
+                - name: url
+                  type: text
+                  description: >
+                    string url
+
+                - name: host_len
+                  description: >
+                    length host
+
+                - name: host
+                  type: text
+                  description: >
+                    string host                                  
+
+        - name: mpls
+          type: group          
+              description: >
+                Extended MPLS Data
+              fields:
+                - name: ip_version
+                  description: >
+                    IP version of next hop router (1=v4|2=v6)
+                
+                - name: next_hop
+                  description: >
+                    IP address next hop router (v4=4byte|v6=16byte)
+
+                - name: in_label_stack_no
+                  description: >
+                    in label stack NO
+
+                - name: in_label_stack
+                  description: >
+                    in label stack 
+
+                - name: out_label_stack_no
+                  description: >
+                    out label stack NO               
+
+                - name: out_label_stack
+                  description: >
+                    out label stack 
+
+        - name: nat
+          type: group          
+              description: >
+                Extended NAT Data
+              fields:
+                - name: src_version
+                  description: >
+                    IP version of source address (1=v4|2=v6)
+                
+                - name: src_ip
+                  description: >
+                    IP address source address (v4=4byte|v6=16byte)
+
+                - name: dst_version
+                  description: >
+                    int IP version of destination address (1=v4|2=v6)
+
+                - name: dst_ip
+                  description: >
+                    IP address destination address (v4=4byte|v6=16byte)
+
+        - name: mpls_tunnel
+          type: group          
+              description: >
+                Extended MPLS Tunnel
+              fields:
+                - name: tunnel_name_len
+                  description: >
+                    length tunnel name
+                
+                - name: tunnel_name
+                  description: >
+                    string tunnel name
+
+                - name: tunnel_id
+                  description: >
+                    tunnel name
+
+                - name: tunnel_cos
+                  description: >
+                    tunnel cos value
+
+        - name: mpls_vc
+          type: group          
+              description: >
+                Extended MPLS VC
+              fields:
+                - name: vc_name_len
+                  description: >
+                    length vc instance name
+                
+                - name: vc_name
+                  description: >
+                    string vc instance name
+
+                - name: vll_vc_id
+                  description: >
+                    vll/vc id
+
+                - name: vc_cos
+                  description: >
+                    vc label cos value  
+
+        - name: mpls_fec
+          type: group          
+              description: >
+                Extended MPLS FEC
+              fields:
+                - name: mpls_ftn_desc_len
+                  description: >
+                    int length mpls ftn descr
+                
+                - name: mpls_ftn_desc
+                  type: text
+                  description: >
+                    string mpls ftn descr 
+
+                - name: mpls_ftn_mask
+                  description: >
+                    mpls ftn mask          
+                    
+        - name: mpls_lvp_fec
+          type: group          
+              description: >
+                Extended MPLS LVP FEC
+              fields:
+                - name: prefix_Length
+                  description: >
+                    mpls fec addr prefix length  
+
+        - name: vlan_tunnel
+          type: group          
+              description: >
+                Extended VLAN tunnel
+              fields:
+                - name: layer_stack_no
+                  description: >
+                    layer stack no
+
+                - name: layer  
+                  type: text  
+                  description: >
+                    layer stack data                        

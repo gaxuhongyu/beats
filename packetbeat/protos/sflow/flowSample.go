@@ -614,43 +614,50 @@ func decodeRawPacketHeader(r io.ReadSeeker, length uint32) (*SFRawPacketHeader, 
 // TransInfo get SFRawPacketHeader trans info
 func (rp *SFRawPacketHeader) TransInfo(event common.MapStr) {
 	var proto int
-	event["packagesize"] = rp.FrameLength
-	event["vlanid"] = rp.header.L2.Vlan
-	event["ethertype"] = rp.header.L2.EtherType
+	e := common.MapStr{
+		"header_protocol": rp.HeaderProtocol,
+		"frame_length":    rp.FrameLength,
+		"stripped":        rp.StrippedLength,
+		"header_size":     rp.HeaderLength,
+	}
+
+	e["vlan_id"] = rp.header.L2.Vlan
+	e["ethernet_type"] = rp.header.L2.EtherType
 	switch rp.header.L2.EtherType {
 	case packet.EtherTypeIPv4:
 		header := rp.header.L3.(packet.IPv4Header)
-		event["ipversion"] = header.Version
-		event["tos"] = header.TOS
-		event["ttl"] = header.TTL
-		event["ipprotocol"] = header.Protocol
-		event["srcip"] = header.Src
-		event["dstip"] = header.Dst
+		e["ip_version"] = header.Version
+		e["tos"] = header.TOS
+		e["ttl"] = header.TTL
+		e["ip_protocol"] = header.Protocol
+		e["src_ip"] = header.Src
+		e["dst_ip"] = header.Dst
 		proto = header.Protocol
 	case packet.EtherTypeIPv6:
 		header := rp.header.L3.(packet.IPv6Header)
-		event["ipversion"] = header.Version
-		event["ipprotocol"] = header.NextHeader
-		event["srcip"] = header.Src
-		event["dstip"] = header.Dst
+		e["ip_version"] = header.Version
+		e["ip_protocol"] = header.NextHeader
+		e["src_ip"] = header.Src
+		e["dst_ip"] = header.Dst
 		proto = header.NextHeader
 	}
 
 	switch proto {
 	case packet.IANAProtoICMP:
 		header := rp.header.L4.(packet.ICMP)
-		event["icmptype"] = header.Type
-		event["icmpcode"] = header.Code
+		e["icmp_type"] = header.Type
+		e["icmp_code"] = header.Code
 	case packet.IANAProtoTCP:
 		header := rp.header.L4.(packet.TCPHeader)
-		event["srcport"] = header.SrcPort
-		event["dstport"] = header.DstPort
-		event["tcpflags"] = header.Flags
+		e["src_port"] = header.SrcPort
+		e["dst_port"] = header.DstPort
+		e["tcp_flags"] = header.Flags
 	case packet.IANAProtoUDP:
 		header := rp.header.L4.(packet.UDPHeader)
-		event["srcport"] = header.SrcPort
-		event["dstport"] = header.DstPort
+		e["src_port"] = header.SrcPort
+		e["dst_port"] = header.DstPort
 	}
+	event["raw"] = e
 }
 
 func decodeEthernetHeder(r io.ReadSeeker, length uint32) (*SFEthernetHeder, error) {
@@ -686,8 +693,11 @@ func (eh *SFEthernetHeder) paserMacInfo() error {
 
 // TransInfo get SFEthernetHeder trans info
 func (eh *SFEthernetHeder) TransInfo(event common.MapStr) {
-	event["srcmac"] = eh.SrcMac
-	event["dstmac"] = eh.DstMac
+	e := common.MapStr{
+		"src_mac":  eh.SrcMac,
+		"dest_mac": eh.DstMac,
+	}
+	event["ethernet"] = e
 }
 
 func decodeSFIPv4Data(r io.ReadSeeker) (*SFIPv4Data, error) {
@@ -728,7 +738,17 @@ func decodeSFIPv4Data(r io.ReadSeeker) (*SFIPv4Data, error) {
 
 // TransInfo get SFIPv4Data trans info
 func (eh *SFIPv4Data) TransInfo(event common.MapStr) {
-
+	e := common.MapStr{
+		"length":      eh.FrameLength,
+		"ip_protocol": eh.Protocol,
+		"src_ip":      eh.SrcIP,
+		"dst_ip":      eh.DstIP,
+		"src_port":    eh.SrcPort,
+		"dst_port":    eh.DstPort,
+		"tcp_flags":   eh.TCPFlags,
+		"tos":         eh.Tos,
+	}
+	event["ipv4"] = e
 }
 
 func decodeExtRouter(r io.ReadSeeker) (*SFExtRouterData, error) {
@@ -755,9 +775,13 @@ func decodeExtRouter(r io.ReadSeeker) (*SFExtRouterData, error) {
 
 // TransInfo get SFExtRouterData trans info
 func (eh *SFExtRouterData) TransInfo(event common.MapStr) {
-	event["nextHop"] = eh.NextHop
-	event["srcmasklen"] = eh.SrcMaskLen
-	event["dstmasklen"] = eh.DstMaskLen
+	e := common.MapStr{
+		"ip_version":   eh.IPVersion,
+		"next_hop":     eh.NextHop,
+		"src_mask_len": eh.SrcMaskLen,
+		"dst_mask_len": eh.DstMaskLen,
+	}
+	event["router"] = e
 }
 
 func decodeExtSwitch(r io.ReadSeeker) (*SFExtSwitchData, error) {
@@ -782,8 +806,13 @@ func decodeExtSwitch(r io.ReadSeeker) (*SFExtSwitchData, error) {
 
 // TransInfo get SFExtSwitchData trans info
 func (es *SFExtSwitchData) TransInfo(event common.MapStr) {
-	event["srcvlanid"] = es.SrcVlanID
-	event["dstvlanid"] = es.DstVlanID
+	e := common.MapStr{
+		"src_vlan":     es.SrcVlanID,
+		"src_priority": es.SrcVlanPriority,
+		"dst_vlan":     es.DstVlanID,
+		"dst_priority": es.DstVlanPriority,
+	}
+	event["switch"] = e
 }
 
 func decodeSFIPv6Data(r io.ReadSeeker) (*SFIPv6Data, error) {
@@ -824,12 +853,17 @@ func decodeSFIPv6Data(r io.ReadSeeker) (*SFIPv6Data, error) {
 
 // TransInfo get ipv6 data trans info
 func (eh *SFIPv6Data) TransInfo(event common.MapStr) {
-	event["srcip"] = eh.SrcIP
-	event["dstip"] = eh.DstIP
-	event["srcport"] = eh.SrcPort
-	event["dstport"] = eh.DstPort
-	event["tcpflags"] = eh.TCPFlags
-	event["ipprotocol"] = eh.NextHeader
+	e := common.MapStr{
+		"length":      eh.FrameLength,
+		"ip_protocol": eh.NextHeader,
+		"src_ip":      eh.SrcIP,
+		"dst_ip":      eh.DstIP,
+		"src_port":    eh.SrcPort,
+		"dst_port":    eh.DstPort,
+		"tcp_flags":   eh.TCPFlags,
+		"priority":    eh.Priority,
+	}
+	event["ipv6"] = e
 }
 
 func decodeSFExtGatewayData(r io.ReadSeeker) (*SFExtGatewayData, error) {
@@ -909,12 +943,15 @@ func decodeAsPath(r io.ReadSeeker) (*SFGatewayAsPath, error) {
 
 // TransInfo get SFExtGatewayData data trans info
 func (gw *SFExtGatewayData) TransInfo(event common.MapStr) {
-	// event["srcip"] = eh.SrcIP
-	// event["dstip"] = eh.DstIP
-	// event["srcport"] = eh.SrcPort
-	// event["dstport"] = eh.DstPort
-	// event["tcpflags"] = eh.TCPFlags
-	// event["ipprotocol"] = eh.NextHeader
+	e := common.MapStr{
+		"ip_version":     gw.IPVersion,
+		"next_hop":       gw.NextHop,
+		"as_router_no":   gw.AsRouterNo,
+		"as_source_no":   gw.AsSourceNo,
+		"as_source_peer": gw.AsSourceNoPeer,
+		"local_pref":     gw.LocalPref,
+	}
+	event["gateway"] = e
 }
 
 func decodeSFExtUserData(r io.ReadSeeker) (*SFExtUserData, error) {
@@ -948,13 +985,16 @@ func decodeSFExtUserData(r io.ReadSeeker) (*SFExtUserData, error) {
 }
 
 // TransInfo get SFExtUserData data trans info
-func (gw *SFExtUserData) TransInfo(event common.MapStr) {
-	// event["srcip"] = eh.SrcIP
-	// event["dstip"] = eh.DstIP
-	// event["srcport"] = eh.SrcPort
-	// event["dstport"] = eh.DstPort
-	// event["tcpflags"] = eh.TCPFlags
-	// event["ipprotocol"] = eh.NextHeader
+func (us *SFExtUserData) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"src_charset":  us.SourceCharset,
+		"src_user_len": us.LenSourceUser,
+		"src_user":     us.SourceUser,
+		"dst_charset":  us.DestCharset,
+		"dst_user_len": us.LenDestUser,
+		"dst_user":     us.DestUser,
+	}
+	event["user"] = e
 }
 
 func decodeSFExtURLData(r io.ReadSeeker) (*SFExtURLData, error) {
@@ -985,8 +1025,15 @@ func decodeSFExtURLData(r io.ReadSeeker) (*SFExtURLData, error) {
 }
 
 // TransInfo get SFExtURLData data trans info
-func (gw *SFExtURLData) TransInfo(event common.MapStr) {
-
+func (url *SFExtURLData) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"direction": url.Direction,
+		"url_len":   url.LengthURL,
+		"url":       url.URLString,
+		"host_len":  url.LengthHost,
+		"host":      url.HostString,
+	}
+	event["url"] = e
 }
 
 func decodeSFExtMPLSData(r io.ReadSeeker) (*SFExtMPLSData, error) {
@@ -1026,8 +1073,16 @@ func decodeSFExtMPLSData(r io.ReadSeeker) (*SFExtMPLSData, error) {
 }
 
 // TransInfo get SFExtMPLSData data trans info
-func (gw *SFExtMPLSData) TransInfo(event common.MapStr) {
-
+func (mpls *SFExtMPLSData) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"ip_version":         mpls.IPVersion,
+		"next_hop":           mpls.NextHop,
+		"in_label_stack_no":  mpls.InLabelCount,
+		"in_label_stack":     mpls.InLabel,
+		"out_label_stack_no": mpls.OutLabelCount,
+		"out_label_stack":    mpls.OutLabel,
+	}
+	event["mpls"] = e
 }
 
 func decodeSFExtNATData(r io.ReadSeeker) (*SFExtNATData, error) {
@@ -1064,8 +1119,14 @@ func decodeSFExtNATData(r io.ReadSeeker) (*SFExtNATData, error) {
 }
 
 // TransInfo get SFExtNATData data trans info
-func (gw *SFExtNATData) TransInfo(event common.MapStr) {
-
+func (nat *SFExtNATData) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"src_version": nat.SourceIPVersion,
+		"src_ip":      nat.SourceIPAddr,
+		"dst_version": nat.DestIPVersion,
+		"dst_ip":      nat.DestIPAddr,
+	}
+	event["nat"] = e
 }
 
 func decodeSFExtMPLSTunnel(r io.ReadSeeker) (*SFExtMPLSTunnel, error) {
@@ -1091,8 +1152,14 @@ func decodeSFExtMPLSTunnel(r io.ReadSeeker) (*SFExtMPLSTunnel, error) {
 }
 
 // TransInfo get SFExtMPLSTunnel data trans info
-func (gw *SFExtMPLSTunnel) TransInfo(event common.MapStr) {
-
+func (tun *SFExtMPLSTunnel) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"tunnel_name_len": tun.TunnelNameLen,
+		"tunnel_name":     tun.TunnelName,
+		"tunnel_id":       tun.TunnelID,
+		"tunnel_cos":      tun.TunnelCos,
+	}
+	event["mpls_tunnel"] = e
 }
 
 func decodeSFExtMPLSVC(r io.ReadSeeker) (*SFExtMPLSVC, error) {
@@ -1119,7 +1186,13 @@ func decodeSFExtMPLSVC(r io.ReadSeeker) (*SFExtMPLSVC, error) {
 
 // TransInfo get SFExtMPLSVC data trans info
 func (vc *SFExtMPLSVC) TransInfo(event common.MapStr) {
-
+	e := common.MapStr{
+		"vc_name_len": vc.VcInstanceNameLen,
+		"vc_name":     vc.VcInstanceName,
+		"vll_vc_id":   vc.VcID,
+		"vc_cos":      vc.VcLabelCos,
+	}
+	event["mpls_vc"] = e
 }
 
 func decodeSFExtMPLSFEC(r io.ReadSeeker) (*SFExtMPLSFEC, error) {
@@ -1142,8 +1215,13 @@ func decodeSFExtMPLSFEC(r io.ReadSeeker) (*SFExtMPLSFEC, error) {
 }
 
 // TransInfo get SFExtMPLSFEC data trans info
-func (vc *SFExtMPLSFEC) TransInfo(event common.MapStr) {
-
+func (fec *SFExtMPLSFEC) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"mpls_ftn_desc_len": fec.MplsFTNDescrLen,
+		"mpls_ftn_desc":     fec.MplsFTNDescr,
+		"mpls_ftn_mask":     fec.MplsFTNMask,
+	}
+	event["mpls_fec"] = e
 }
 
 func decodeSFExtMPLSLvpFec(r io.ReadSeeker) (*SFExtMPLSLvpFec, error) {
@@ -1158,8 +1236,11 @@ func decodeSFExtMPLSLvpFec(r io.ReadSeeker) (*SFExtMPLSLvpFec, error) {
 }
 
 // TransInfo get SFExtMPLSLvpFec data trans info
-func (vc *SFExtMPLSLvpFec) TransInfo(event common.MapStr) {
-
+func (lvp *SFExtMPLSLvpFec) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"prefix_Length": lvp.MplsFecAddrPrefixLength,
+	}
+	event["mpls_lvp_fec"] = e
 }
 
 func decodeSFExtVlanTunnel(r io.ReadSeeker) (*SFExtVlanTunnel, error) {
@@ -1181,6 +1262,10 @@ func decodeSFExtVlanTunnel(r io.ReadSeeker) (*SFExtVlanTunnel, error) {
 }
 
 // TransInfo get SFExtVlanTunnel data trans info
-func (vc *SFExtVlanTunnel) TransInfo(event common.MapStr) {
-
+func (tun *SFExtVlanTunnel) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"layer_stack_no": tun.LayerLen,
+		"layer":          tun.LayerData,
+	}
+	event["vlan_tunnel"] = e
 }

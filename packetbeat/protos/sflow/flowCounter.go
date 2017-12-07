@@ -203,6 +203,13 @@ func decodeCounterSampleHeader(r io.ReadSeeker, tag uint32) (*SFCounterSampleHea
 
 // TransInfo get SFCounterSampleHeader trans info
 func (sh *SFCounterSampleHeader) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"format":   sh.Tag,
+		"sequence": sh.SequenceNo,
+		"type":     sh.SourceIDType,
+		"index":    sh.SourceIDIndex,
+	}
+	event["sample"] = e
 }
 
 func decodeCounterRecord(r io.ReadSeeker) (SfTrans, error) {
