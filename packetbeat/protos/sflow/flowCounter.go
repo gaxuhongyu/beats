@@ -347,8 +347,29 @@ func decodeSFGenericInterfaceCounter(r io.ReadSeeker) (*SFGenericInterfaceCounte
 }
 
 // TransInfo get SFGenericInterfaceCounters data trans info
-func (vc *SFGenericInterfaceCounters) TransInfo(event common.MapStr) {
+func (gic *SFGenericInterfaceCounters) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"ifIndex":            gic.IfIndex,
+		"ifType":             gic.IfType,
+		"ifSpeed":            gic.IfSpeed,
+		"ifDirection":        gic.IfDirection,
+		"ifStatus":           gic.IfStatus,
+		"ifInOctets":         gic.IfInOctets,
+		"ifInUcastPkts":      gic.IfInUcastPkts,
+		"ifInMulticastPkts":  gic.IfInMulticastPkts,
+		"ifInDiscards":       gic.IfInDiscards,
+		"ifInErrors":         gic.IfInErrors,
+		"ifInUnknownProtos":  gic.IfInUnknownProtos,
+		"ifOutOctets":        gic.IfOutOctets,
+		"ifOutUcastPkts":     gic.IfOutUcastPkts,
+		"ifOutMulticastPkts": gic.IfOutMulticastPkts,
+		"ifOutBroadcastPkts": gic.IfOutBroadcastPkts,
+		"ifOutDiscards":      gic.IfOutDiscards,
+		"ifOutErrors":        gic.IfOutErrors,
+		"ifPromiscuousMode":  gic.IfPromiscuousMode,
+	}
 
+	event["generic_interface_counters"] = e
 }
 
 func decodeSFEthernetInterfaceCounters(r io.ReadSeeker) (*SFEthernetInterfaceCounters, error) {
@@ -399,8 +420,24 @@ func decodeSFEthernetInterfaceCounters(r io.ReadSeeker) (*SFEthernetInterfaceCou
 }
 
 // TransInfo get SFEthernetInterfaceCounters data trans info
-func (vc *SFEthernetInterfaceCounters) TransInfo(event common.MapStr) {
+func (eif *SFEthernetInterfaceCounters) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"dot3StatsAlignmentErrors":           eif.Dot3StatsAlignmentErrors,
+		"dot3StatsFCSErrors":                 eif.Dot3StatsFCSErrors,
+		"dot3StatsSingleCollisionFrames":     eif.Dot3StatsSingleCollisionFrames,
+		"dot3StatsMultipleCollisionFrames":   eif.Dot3StatsMultipleCollisionFrames,
+		"dot3StatsSQETestErrors":             eif.Dot3StatsSQETestErrors,
+		"dot3StatsDeferredTransmissions":     eif.Dot3StatsDeferredTransmissions,
+		"dot3StatsLateCollisions":            eif.Dot3StatsLateCollisions,
+		"dot3StatsExcessiveCollisions":       eif.Dot3StatsExcessiveCollisions,
+		"dot3StatsInternalMacTransmitErrors": eif.Dot3StatsInternalMacTransmitErrors,
+		"dot3StatsCarrierSenseErrors":        eif.Dot3StatsCarrierSenseErrors,
+		"dot3StatsFrameTooLongs":             eif.Dot3StatsFrameTooLongs,
+		"dot3StatsInternalMacReceiveErrors":  eif.Dot3StatsInternalMacReceiveErrors,
+		"dot3StatsSymbolErrors":              eif.Dot3StatsSymbolErrors,
+	}
 
+	event["ethernet_interface_counters"] = e
 }
 
 func decodeSFTokenRingCounters(r io.ReadSeeker) (*SFTokenRingCounters, error) {
@@ -466,8 +503,29 @@ func decodeSFTokenRingCounters(r io.ReadSeeker) (*SFTokenRingCounters, error) {
 }
 
 // TransInfo get SFTokenRingCounters data trans info
-func (vc *SFTokenRingCounters) TransInfo(event common.MapStr) {
+func (trc *SFTokenRingCounters) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"dot5StatsLineErrors":         trc.Dot5StatsLineErrors,
+		"dot5StatsACErrors":           trc.Dot5StatsACErrors,
+		"dot5StatsAbortTransErrors":   trc.Dot5StatsAbortTransErrors,
+		"dot5StatsInternalErrors":     trc.Dot5StatsInternalErrors,
+		"dot5StatsLostFrameErrors":    trc.Dot5StatsLostFrameErrors,
+		"dot5StatsReceiveCongestions": trc.Dot5StatsReceiveCongestions,
+		"dot5StatsFrameCopiedErrors":  trc.Dot5StatsFrameCopiedErrors,
+		"dot5StatsTokenErrors":        trc.Dot5StatsTokenErrors,
+		"dot5StatsSoftErrors":         trc.Dot5StatsSoftErrors,
+		"dot5StatsHardErrors":         trc.Dot5StatsHardErrors,
+		"dot5StatsSignalLoss":         trc.Dot5StatsLostFrameErrors,
+		"dot5StatsTransmitBeacons":    trc.Dot5StatsTransmitBeacons,
+		"dot5StatsRecoverys":          trc.Dot5StatsRecoverys,
+		"dot5StatsLobeWires":          trc.Dot5StatsLobeWires,
+		"dot5StatsBurstErrors":        trc.Dot5StatsBurstErrors,
+		"dot5StatsRemoves":            trc.Dot5StatsRemoves,
+		"dot5StatsSingles":            trc.Dot5StatsSingles,
+		"dot5StatsFreqErrors":         trc.Dot5StatsFreqErrors,
+	}
 
+	event["token_ring_counters"] = e
 }
 
 func decodeSF100BaseVGInterfaceCounters(r io.ReadSeeker) (*SF100BaseVGInterfaceCounters, error) {
@@ -521,8 +579,25 @@ func decodeSF100BaseVGInterfaceCounters(r io.ReadSeeker) (*SF100BaseVGInterfaceC
 }
 
 // TransInfo get SF100BaseVGInterfaceCounters data trans info
-func (vc *SF100BaseVGInterfaceCounters) TransInfo(event common.MapStr) {
+func (bic *SF100BaseVGInterfaceCounters) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"dot12InHighPriorityFrames":    bic.Dot12InHighPriorityFrames,
+		"dot12InHighPriorityOctets":    bic.Dot12InHighPriorityOctets,
+		"dot12InNormPriorityFrames":    bic.Dot12InNormPriorityFrames,
+		"dot12InNormPriorityOctets":    bic.Dot12InNormPriorityOctets,
+		"dot12InIPMErrors":             bic.Dot12InIPMErrors,
+		"dot12InOversizeFrameErrors":   bic.Dot12InOversizeFrameErrors,
+		"dot12InDataErrors":            bic.Dot12InDataErrors,
+		"dot12InNullAddressedFrames":   bic.Dot12InNullAddressedFrames,
+		"dot12OutHighPriorityFrames":   bic.Dot12OutHighPriorityFrames,
+		"dot12OutHighPriorityOctets":   bic.Dot12OutHighPriorityOctets,
+		"dot12TransitionIntoTrainings": bic.Dot12TransitionIntoTrainings,
+		"dot12HCInHighPriorityOctets":  bic.Dot12HCInHighPriorityOctets,
+		"dot12HCInNormPriorityOctets":  bic.Dot12HCInNormPriorityOctets,
+		"dot12HCOutHighPriorityOctets": bic.Dot12HCOutHighPriorityOctets,
+	}
 
+	event["baseVG_interface_counters"] = e
 }
 
 func decodeSFVLANCounters(r io.ReadSeeker) (*SFVLANCounters, error) {
@@ -553,7 +628,16 @@ func decodeSFVLANCounters(r io.ReadSeeker) (*SFVLANCounters, error) {
 
 // TransInfo get SFVLANCounters data trans info
 func (vc *SFVLANCounters) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"vlan_id":       vc.VlanID,
+		"octets":        vc.Octets,
+		"ucastPkts":     vc.UcastPkts,
+		"multicastPkts": vc.MulticastPkts,
+		"broadcastPkts": vc.BroadcastPkts,
+		"discards":      vc.Discards,
+	}
 
+	event["vlan_counters"] = e
 }
 
 func decodeSFProcessorInformation(r io.ReadSeeker) (*SFProcessorInformation, error) {
@@ -580,6 +664,14 @@ func decodeSFProcessorInformation(r io.ReadSeeker) (*SFProcessorInformation, err
 }
 
 // TransInfo get SFProcessorInformation data trans info
-func (vc *SFProcessorInformation) TransInfo(event common.MapStr) {
+func (pi *SFProcessorInformation) TransInfo(event common.MapStr) {
+	e := common.MapStr{
+		"cpu_5s_percentage": pi.CPU5sPercentage,
+		"cpu_1m_percentage": pi.CPU1mPercentage,
+		"cpu_5m_percentage": pi.CPU5mPercentage,
+		"total_memory":      pi.TotalMemory,
+		"free_memory":       pi.FreeMemory,
+	}
 
+	event["processor_information"] = e
 }
