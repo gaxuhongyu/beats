@@ -76,7 +76,8 @@
           example: IN
 
         - name: question.etld_plus_one
-          description: The effective top-level domain (eTLD) plus one more label.
+          description: >
+            The effective top-level domain (eTLD) plus one more label.
             For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.".
             The data for determining the eTLD comes from an embedded copy of the
             data from http://publicsuffix.org.
