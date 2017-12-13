@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"reflect"
 	"testing"
 
@@ -127,15 +128,19 @@ func Test_SampleHeaderTransInfo(t *testing.T) {
 				r: testSampleHeader,
 			},
 			want: common.MapStr{
-				"drops":        uint32(0),
-				"flowsrecords": uint32(0x4E20),
-				"inputformat":  uint32(0),
-				"inputindex":   uint32(0x41),
-				"outputformat": uint32(0),
-				"outputindex":  uint32(0x86),
-				"samplepool":   uint32(0x2F2A47A0),
-				"samplerate":   uint32(0x4E20),
-				"sequenceno":   uint32(5),
+				"sample": common.MapStr{
+					"drops":                   uint32(0),
+					"format":                  uint32(0),
+					"input_interface_format":  uint32(0),
+					"input_interface_value":   uint32(0x41),
+					"index":                   uint32(0x41),
+					"output_interface_format": uint32(0),
+					"output_interface_value":  uint32(0x86),
+					"pool":     uint32(0x2F2A47A0),
+					"rate":     uint32(0x4E20),
+					"sequence": uint32(0x9A8D),
+					"type":     uint32(0),
+				},
 			},
 		},
 	}
@@ -212,18 +217,23 @@ func Test_RawPacketHeaderTransInfo(t *testing.T) {
 				r: testRawPacketHeader,
 			},
 			want: common.MapStr{
-				"dstport":     int(0x1F90),
-				"srcport":     int(0x97BF),
-				"tcpflags":    int(0x10),
-				"dstip":       string("10.153.150.99"),
-				"ethertype":   2048,
-				"ipprotocol":  int(6),
-				"ipversion":   int(4),
-				"packagesize": int(1518),
-				"srcip":       string("10.23.71.95"),
-				"tos":         int(0),
-				"ttl":         int(0x3C),
-				"vlanid":      int(0),
+				"raw": common.MapStr{
+					"dst_port":        uint32(0x1F90),
+					"src_port":        uint32(0x97BF),
+					"tcp_flags":       uint32(0x10),
+					"dst_ip":          net.ParseIP("10.153.150.99"),
+					"ethernet_type":   2048,
+					"ip_protocol":     uint32(6),
+					"ip_version":      uint32(4),
+					"frame_length":    uint32(1518),
+					"src_ip":          net.ParseIP("10.23.71.95"),
+					"tos":             uint32(0),
+					"ttl":             uint32(0x3C),
+					"vlan_id":         uint32(0),
+					"stripped":        uint32(1390),
+					"header_protocol": uint32(1),
+					"header_size":     uint32(0x80),
+				},
 			},
 		},
 	}
@@ -236,6 +246,9 @@ func Test_RawPacketHeaderTransInfo(t *testing.T) {
 					t.Errorf("SFRawPacketHeader func TransInfo return %s = %v, want %v", key, got[key], value)
 				}
 			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("SampleHeader func TransInfo() = %v, want %v", got, tt.want)
+			// }
 		})
 	}
 }
@@ -302,8 +315,10 @@ func Test_EthernetHederTransInfo(t *testing.T) {
 				r: testEthernetHeder,
 			},
 			want: common.MapStr{
-				"srcmac": "3c:8c:40:bc:32:3f",
-				"dstmac": "00:00:c8:8d:83:aa",
+				"ethernet": common.MapStr{
+					"src_mac":  "3c:8c:40:bc:32:3f",
+					"dest_mac": "00:00:c8:8d:83:aa",
+				},
 			},
 		},
 	}
@@ -377,20 +392,28 @@ func Test_SFIPv4DataTransInfo(t *testing.T) {
 			args: args{
 				r: testSFIPv4Data,
 			},
-			want: common.MapStr{},
+			want: common.MapStr{
+				"ipv4": common.MapStr{
+					"dst_ip":      net.ParseIP("10.153.150.99"),
+					"dst_port":    uint32(0x1F90),
+					"ip_protocol": uint32(6),
+					"length":      uint32(0x05DC),
+					"src_ip":      net.ParseIP("10.23.71.95"),
+					"src_port":    uint32(0x97BF),
+					"tcp_flags":   uint32(16),
+					"tos":         uint32(0),
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := common.MapStr{}
 			tt.args.r.TransInfo(got)
-			// for key, value := range tt.want {
-			// 	if fmt.Sprintf("%v", got[key]) != fmt.Sprintf("%v", value) {
-			// 		t.Errorf("SFRawPacketHeader func TransInfo return %s = %v, want %v", key, got[key], value)
-			// 	}
-			// }
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SFEthernetHeder func TransInfo() = %v, want %v", got, tt.want)
+			for key, value := range tt.want {
+				if fmt.Sprintf("%v", got[key]) != fmt.Sprintf("%v", value) {
+					t.Errorf("SFRawPacketHeader func TransInfo return %s = %v, want %v", key, got[key], value)
+				}
 			}
 		})
 	}
@@ -451,9 +474,12 @@ func Test_SFExtRouterDataTransInfo(t *testing.T) {
 				r: testSFExtRouterData,
 			},
 			want: common.MapStr{
-				"dstmasklen": 22,
-				"nextHop":    "172.20.2.51",
-				"srcmasklen": 22,
+				"router": common.MapStr{
+					"dst_mask_len": 22,
+					"ip_version":   1,
+					"next_hop":     net.ParseIP("172.20.2.51"),
+					"src_mask_len": 22,
+				},
 			},
 		},
 	}
@@ -466,9 +492,6 @@ func Test_SFExtRouterDataTransInfo(t *testing.T) {
 					t.Errorf("SFRawPacketHeader func TransInfo return %s = %v, want %v", key, got[key], value)
 				}
 			}
-			// if !reflect.DeepEqual(got, tt.want) {
-			// 	t.Errorf("SFEthernetHeder func TransInfo() = %v, want %v", got, tt.want)
-			// }
 		})
 	}
 }
@@ -529,8 +552,12 @@ func Test_SFExtSwitchDataTransInfo(t *testing.T) {
 				r: testExtSwitchData,
 			},
 			want: common.MapStr{
-				"dstvlanid": 0xC091,
-				"srcvlanid": 0xFA0,
+				"switch": common.MapStr{
+					"dst_priority": 0xF0B0,
+					"dst_vlan":     0xC091,
+					"src_priority": 0xB11B,
+					"src_vlan":     0x0FA0,
+				},
 			},
 		},
 	}
@@ -543,6 +570,9 @@ func Test_SFExtSwitchDataTransInfo(t *testing.T) {
 					t.Errorf("SFRawPacketHeader func TransInfo return %s = %v, want %v", key, got[key], value)
 				}
 			}
+			// if !reflect.DeepEqual(got, tt.want) {
+			// 	t.Errorf("SFEthernetHeder func TransInfo() = %v, want %v", got, tt.want)
+			// }
 		})
 	}
 }
