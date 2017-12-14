@@ -439,6 +439,7 @@ packetbeat.protocols:
   # Transaction timeout. Expired transactions will no longer be correlated to
   # incoming responses, but sent to Elasticsearch immediately.
   #transaction_timeout: 10s
+  
 - type: tls
   # Enable TLS monitoring. Default: true
   #enabled: true

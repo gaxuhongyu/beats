@@ -2044,3 +2044,846 @@
           type: keyword
           description: >
             An array containing the TLS alert type for every alert received.
+
+- key: sflow
+  title: "Sflow"
+  description: >
+    Sflow-specific event fields.
+  fields:
+    - name: sflow
+      type: group
+      fields:
+        - name: version
+          description: >
+            Sflow version(2|4|5)
+
+        - name: ip_version
+          description: >
+            IP version of the Agent / Switch (1=v4|2=v6)
+        
+        - name: agent
+          description: >
+            Agent IP address (v4|v6)
+
+        - name: sub_agent
+          description: >
+            Sflow sub agent id
+
+        - name: sequence
+          description: >         
+            Sflow datagram sequence number
+        
+        - name: uptime
+          description: >         
+            switch uptime in ms
+
+        - name: sample
+          type: group
+          description: >         
+            The sample is contain Flow sample|Counter Sample|Expanded Flow Sample|Expanded Counter Sample
+          fields:
+            - name: format
+              description: >
+                The format is mark sflow sample type:1=Flow sample|
+                2=Counter Sample|3=Expanded Flow Sample|4=Expanded Counter Sample
+
+            - name: sequence
+              description: >
+                sample sequence number
+            
+            - name: type
+              description: >
+                source id type(0=ifIndex|1=smonVlanDataSource|2=entPhysicalEntry)
+            
+            - name: index
+              description: >
+                source id index
+
+            - name: rate
+              description: >
+                sampling rate
+            
+            - name: pool
+              description: >
+                total number of packets that could have been sampled
+            
+            - name: drops
+              description: >
+                packets dropped due to a lack of resources
+            
+            - name: input_interface_format
+              description: >
+                SNMP ifIndex of input interface format, 0 if not known
+
+            - name: input_interface_value
+              description: >
+                SNMP ifIndex of input interface
+
+            - name: output_interface_format
+              description: >
+                SNMP ifIndex of output interface format, 0 if not known
+
+            - name: output_interface_value
+              description: >
+                SNMP ifIndex of output interface, 0 if not known.
+                broadcast or multicast are handled as follows:the 
+                first bit indicates multiple destinations, the lower 
+                order bits number of interfaces
+
+        - name: raw
+          type: group        
+          description: >
+            raw packet header
+          fields:
+            - name: header_protocol
+              description: >
+                raw packet protocol(1=ethernet, .... 11=IPv4, 12=IPv6)
+            
+            - name: frame_length
+              description: >
+                length before sampling                 
+            
+            - name: stripped
+              description: >
+                number of bytes removed from the packet
+            
+            - name: header_size
+              description: >
+                sample header size(bytes)
+
+            - name: vlan_id
+              description: >
+                from raw packet header decode vlan id
+
+            - name: ethernet_type
+              description: >
+                from datalink layer raw data ethernet type
+            
+            - name: ip_version
+              description: >
+                layer 3 packet header ip version
+
+            - name: tos
+              description: >
+                layer 3 type of service
+            
+            - name: ttl
+              description: >
+                layer 3 time to live
+            
+            - name: ip_protocol
+              description: >
+                layer 3 header protocol(1=ICMP|6=TCP|17=UDP)
+            
+            - name: src_ip
+              description: >
+                source ip address
+
+            - name: dst_ip
+              description: >
+                destination ip address
+
+            - name: icmp_type
+              description: >
+                layer 4 icmp protocol type
+            
+            - name: icmp_code
+              description: >
+                layer 4 icmp protocol code
+
+            - name: src_port
+              description: >
+                layer 4 source port
+
+            - name: dst_port
+              description: >
+                layer 4 destination port
+
+            - name: tcp_flags
+              description: >
+                layer 4 tcp flags only TCP protocol hava exist this falgs
+            
+        - name: ethernet
+          type: group          
+          description: >
+            ethernet frame data
+          fields:            
+            - name: src_mac
+              description: >
+                source MAC address                 
+            
+            - name: dest_mac
+              description: >
+                dest MAC address
+        
+        - name: ipv4
+          type: group          
+          description: >
+            ipv4 packet data
+          fields:
+            - name: length
+              description: >
+                packet length
+            
+            - name: ip_protocol
+              description: >
+                ip protocol 6=tcp|17=udp                 
+            
+            - name: src_ip
+              description: >
+                source ip address
+            
+            - name: dest_ip
+              description: >
+                destination ip address
+
+            - name: src_port
+              description: >
+                source port
+            
+            - name: dst_port
+              description: >
+                destination port
+            
+            - name: tcp_flags
+              description: >
+                tcp flags
+
+            - name: tos
+              description: >
+                type of service
+
+        - name: ipv6
+          type: group          
+          description: >
+            ipv6 packet data
+          fields:
+            - name: length
+              description: >
+                ipv6 packet length
+            
+            - name: ip_protocol
+              description: >
+                ip protocol 6=tcp|17=udp                 
+            
+            - name: src_ip
+              description: >
+                source ip address
+            
+            - name: dest_ip
+              description: >
+                destination ip address
+
+            - name: src_port
+              description: >
+                source port
+            
+            - name: dst_port
+              description: >
+                destination port
+            
+            - name: tcp_flags
+              description: >
+                tcp flags
+
+            - name: priority
+              description: >
+                ip priority
+
+        - name: switch
+          type: group          
+          description: >
+            extended data switch
+          fields:
+            - name: src_vlan
+              description: >
+                source vlan 
+            
+            - name: src_priority
+              description: >
+                source priority
+
+            - name: dst_vlan
+              description: >
+                destination vlan
+
+            - name: dst_priority
+              description: >
+                destination priority                                  
+
+        - name: router
+          type: group          
+          description: >
+            extended data router
+          fields:
+            - name: ip_version
+              description: >
+                IP version of next hop router (1=v4|2=v6) 
+            
+            - name: next_hop
+              description: >
+                IP address next hop router (v4=4byte|v6=16byte)
+
+            - name: src_mask_len
+              description: >
+                source router mask length
+
+            - name: dst_mask_len
+              description: >
+                destination router mask length
+
+        - name: gateway
+          type: group          
+          description: >
+            extended data gateway +nexthop router ip
+          fields:
+            - name: ip_version
+              description: >
+                IP version of next hop router (1=v4|2=v6) 
+            
+            - name: next_hop
+              description: >
+                IP address next hop router (v4=4byte|v6=16byte)
+
+            - name: as_router_no
+              description: >
+                as number of router
+
+            - name: as_source_no
+              description: >
+                as number of source
+
+            - name: as_source_peer
+              description: >
+                as number of source peer
+
+            - name: local_pref
+              description: >
+                local pref                                   
+
+        - name: user
+          type: group          
+          description: >
+            extended data user+charset
+          fields:
+            - name: src_charset
+              description: >
+                source charset
+            
+            - name: src_user_len
+              description: >
+                length source user string
+
+            - name: src_user
+              type: text
+              description: >
+                as number of router
+
+            - name: dst_charset
+              description: >
+                destination charset
+
+            - name: dst_user_len
+              description: >
+                as length destination user string
+
+            - name: dst_user
+              type: text
+              description: >
+                string destination user                                  
+
+        - name: url
+          type: group          
+          description: >
+            extended url user+host
+          fields:
+            - name: direction
+              description: >
+                direction (1=src|2=dest)
+            
+            - name: url_len
+              description: >
+                length url
+
+            - name: url
+              type: text
+              description: >
+                string url
+
+            - name: host_len
+              description: >
+                length host
+
+            - name: host
+              type: text
+              description: >
+                string host                                  
+
+        - name: mpls
+          type: group          
+          description: >
+            Extended MPLS Data
+          fields:
+            - name: ip_version
+              description: >
+                IP version of next hop router (1=v4|2=v6)
+            
+            - name: next_hop
+              description: >
+                IP address next hop router (v4=4byte|v6=16byte)
+
+            - name: in_label_stack_no
+              description: >
+                in label stack NO
+
+            - name: in_label_stack
+              description: >
+                in label stack 
+
+            - name: out_label_stack_no
+              description: >
+                out label stack NO               
+
+            - name: out_label_stack
+              description: >
+                out label stack 
+
+        - name: nat
+          type: group          
+          description: >
+            Extended NAT Data
+          fields:
+            - name: src_version
+              description: >
+                IP version of source address (1=v4|2=v6)
+            
+            - name: src_ip
+              description: >
+                IP address source address (v4=4byte|v6=16byte)
+
+            - name: dst_version
+              description: >
+                int IP version of destination address (1=v4|2=v6)
+
+            - name: dst_ip
+              description: >
+                IP address destination address (v4=4byte|v6=16byte)
+
+        - name: mpls_tunnel
+          type: group          
+          description: >
+            Extended MPLS Tunnel
+          fields:
+            - name: tunnel_name_len
+              description: >
+                length tunnel name
+            
+            - name: tunnel_name
+              description: >
+                string tunnel name
+
+            - name: tunnel_id
+              description: >
+                tunnel name
+
+            - name: tunnel_cos
+              description: >
+                tunnel cos value
+
+        - name: mpls_vc
+          type: group          
+          description: >
+            Extended MPLS VC
+          fields:
+            - name: vc_name_len
+              description: >
+                length vc instance name
+            
+            - name: vc_name
+              description: >
+                string vc instance name
+
+            - name: vll_vc_id
+              description: >
+                vll/vc id
+
+            - name: vc_cos
+              description: >
+                vc label cos value  
+
+        - name: mpls_fec
+          type: group          
+          description: >
+            Extended MPLS FEC
+          fields:
+            - name: mpls_ftn_desc_len
+              description: >
+                int length mpls ftn descr
+            
+            - name: mpls_ftn_desc
+              type: text
+              description: >
+                string mpls ftn descr 
+
+            - name: mpls_ftn_mask
+              description: >
+                mpls ftn mask          
+                    
+        - name: mpls_lvp_fec
+          type: group          
+          description: >
+            Extended MPLS LVP FEC
+          fields:
+            - name: prefix_Length
+              description: >
+                mpls fec addr prefix length  
+
+        - name: vlan_tunnel
+          type: group          
+          description: >
+            Extended VLAN tunnel
+          fields:
+            - name: layer_stack_no
+              description: >
+                layer stack no
+
+            - name: layer  
+              type: text  
+              description: >
+                layer stack data                        
+
+        - name: generic_interface_counters
+          type: group          
+          description: >
+            sflow counter sample generic interface counters, more detail see RFC2233
+          fields:
+            - name: ifIndex
+              description: >
+                ifIndex
+
+            - name: ifType  
+              description: >
+                ifType
+
+            - name: ifSpeed  
+              type: long
+              description: >
+                layer stack data 
+
+            - name: ifDirection  
+              description: >
+                0=unknown|1=full-duplex|2=half-duplex|3=in|4=out 
+
+            - name: ifStatus  
+              description: >
+                (bit 0 => ifAdminStatus 0=down|1=up, bit 1 => ifOperStatus 0=down|1=up) 
+
+            - name: ifInOctets  
+              type: long  
+              description: >
+                hyper ifInOctets 
+
+            - name: ifInUcastPkts  
+              description: >
+                ifInUcastPkts 
+
+            - name: ifInMulticastPkts  
+              description: >
+                ifInMulticastPkts 
+
+            - name: ifInBroadcastPkts  
+              description: >
+                ifInBroadcastPkts
+
+            - name: ifInDiscards  
+              description: >
+                ifInDiscards 
+
+            - name: ifInErrors  
+              description: >
+                ifInErrors 
+
+            - name: ifInUnknownProtos  
+              description: >
+                ifInUnknownProtos 
+
+            - name: ifOutOctets
+              type: long  
+              description: >
+                ifOutOctets 
+
+            - name: ifOutUcastPkts  
+              description: >
+                ifOutUcastPkts 
+
+            - name: ifOutMulticastPkts  
+              description: >
+                ifOutMulticastPkts 
+
+            - name: ifOutBroadcastPkts  
+              description: >
+                ifOutBroadcastPkts 
+
+            - name: ifOutDiscards  
+              description: >
+                ifOutDiscards 
+
+            - name: ifOutErrors  
+              description: >
+                ifOutErrors 
+
+            - name: ifPromiscuousMode  
+              description: >
+                ifPromiscuousMode 
+
+        - name: ethernet_interface_counters
+          type: group          
+          description: >
+            sflow counter sample ethernet interface counters, more detail see RFC2358
+          fields:
+            - name: dot3StatsAlignmentErrors
+              description: >
+                dot3StatsAlignmentErrors
+
+            - name: dot3StatsFCSErrors
+              description: >
+                dot3StatsFCSErrors
+
+            - name: dot3StatsSingleCollisionFrames
+              description: >
+                dot3StatsSingleCollisionFrames
+
+            - name: dot3StatsMultipleCollisionFrames
+              description: >
+                dot3StatsMultipleCollisionFrames
+
+            - name: dot3StatsSQETestErrors
+              description: >
+                dot3StatsSQETestErrors
+
+            - name: dot3StatsDeferredTransmissions
+              description: >
+                dot3StatsDeferredTransmissions 
+
+            - name: dot3StatsLateCollisions
+              description: >
+                dot3StatsLateCollisions 
+
+            - name: dot3StatsExcessiveCollisions
+              description: >
+                dot3StatsExcessiveCollisions 
+
+            - name: dot3StatsInternalMacTransmitErrors
+              description: >
+                dot3StatsInternalMacTransmitErrors
+
+            - name: dot3StatsCarrierSenseErrors
+              description: >
+                dot3StatsCarrierSenseErrors 
+
+            - name: dot3StatsFrameTooLongs
+              description: >
+                dot3StatsFrameTooLongs 
+
+            - name: dot3StatsInternalMacReceiveErrors
+              description: >
+                dot3StatsInternalMacReceiveErrors 
+
+            - name: dot3StatsSymbolErrors
+              description: >
+                dot3StatsSymbolErrors 
+
+        - name: token_ring_counters
+          type: group          
+          description: >
+            sflow counter sample token ring counters, more detail see RFC1748
+          fields:
+            - name: dot5StatsLineErrors
+              description: >
+                dot5StatsLineErrors
+
+            - name: dot5StatsACErrors
+              description: >
+                dot5StatsACErrors
+
+            - name: dot5StatsAbortTransErrors
+              description: >
+                dot5StatsAbortTransErrors
+
+            - name: dot5StatsInternalErrors
+              description: >
+                dot5StatsInternalErrors
+
+            - name: dot5StatsLostFrameErrors
+              description: >
+                dot5StatsLostFrameErrors
+
+            - name: dot5StatsReceiveCongestions
+              description: >
+                dot5StatsReceiveCongestions
+
+            - name: dot5StatsFrameCopiedErrors
+              description: >
+                dot5StatsFrameCopiedErrors
+
+            - name: dot5StatsTokenErrors
+              description: >
+                dot5StatsTokenErrors
+
+            - name: dot5StatsSoftErrors
+              description: >
+                dot5StatsSoftErrors
+
+            - name: dot5StatsHardErrors
+              description: >
+                dot5StatsHardErrors
+
+            - name: dot5StatsSignalLoss
+              description: >
+                dot5StatsSignalLoss
+
+            - name: dot5StatsTransmitBeacons
+              description: >
+                dot5StatsTransmitBeacons
+
+            - name: dot5StatsRecoverys
+              description: >
+                dot5StatsRecoverys
+
+            - name: dot5StatsLobeWires
+              description: >
+                dot5StatsLobeWires
+
+            - name: dot5StatsBurstErrors
+              description: >
+                dot5StatsBurstErrors
+
+            - name: dot5StatsRemoves
+              description: >
+                dot5StatsRemoves
+
+            - name: dot5StatsSingles
+              description: >
+                dot5StatsSingles
+
+            - name: dot5StatsFreqErrors
+              description: >
+                dot5StatsFreqErrors
+
+        - name: baseVG_interface_counters
+          type: group          
+          description: >
+            sflow counter sample 100 BaseVG Interface Counters, more detail see RFC2020
+          fields:
+            - name: dot12InHighPriorityFrames
+              description: >
+                dot12InHighPriorityFrames   
+
+            - name: dot12InHighPriorityOctets
+              type: text
+              description: >
+                dot12InHighPriorityOctets
+
+            - name: dot12InNormPriorityFrames
+              description: >
+                dot12InNormPriorityFrames
+
+            - name: dot12InNormPriorityOctets
+              type: text
+              description: >
+                dot12InNormPriorityOctets
+
+            - name: dot12InIPMErrors
+              description: >
+                dot12InIPMErrors
+
+            - name: dot12InOversizeFrameErrors
+              description: >
+                dot12InOversizeFrameErrors
+
+            - name: dot12InDataErrors
+              description: >
+                dot12InDataErrors
+
+            - name: dot12InNullAddressedFrames
+              description: >
+                dot12InNullAddressedFrames
+
+            - name: dot12OutHighPriorityFrames
+              description: >
+                dot12OutHighPriorityFrames
+
+            - name: dot12OutHighPriorityOctets
+              type: text
+              description: >
+                dot12OutHighPriorityOctets
+
+            - name: dot12TransitionIntoTrainings
+              description: >
+                dot12TransitionIntoTrainings
+
+            - name: dot12HCInHighPriorityOctets
+              type: text
+              description: >
+                dot12HCInHighPriorityOctets
+
+            - name: dot12HCInNormPriorityOctets
+              type: text
+              description: >
+                dot12HCInNormPriorityOctets
+
+            - name: dot12HCOutHighPriorityOctets
+              type: text
+              description: >
+                dot12HCOutHighPriorityOctets
+
+        - name: vlan_counters
+          type: group          
+          description: >
+            sflow counter sample vlan counters
+          fields:
+            - name: vlan_id
+              description: >
+                vlan_id      
+
+            - name: octets
+              type: text
+              description: >
+                octets                                   
+
+            - name: ucastPkts
+              description: >
+                ucastPkts                                   
+
+            - name: multicastPkts
+              description: >
+                multicastPkts                                   
+
+            - name: broadcastPkts
+              description: >
+                broadcastPkts                                   
+
+            - name: discards
+              description: >
+                discards                                   
+
+        - name: processor_information
+          type: group          
+          description: >
+            sflow counter sample Processor Information
+          fields:
+            - name: cpu_5s_percentage
+              description: >
+                5s cpu percentage      
+            - name: cpu_1m_percentage
+              description: >
+                1m cpu percentage 
+            - name: cpu_5m_percentage
+              description: >
+                5m cpu percentage 
+            - name: total_memory
+              description: >
+                total memory 
+            - name: free_memory
+              description: >
+                free memory                                                                                 
