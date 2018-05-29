@@ -95,14 +95,13 @@ packetbeat.protocols:
 
 - type: sflow
   # Configure the ports where to listen for sflow traffic. You can disable
-  # the Sflow protocol by commenting out the list of ports.
+  # the sflow protocol by commenting out the list of ports.
   ports: [6343]
   # 1:flow sample 
   # 2:counter sample
   # 3:Expanded flow sample
   # 4:Expanded Counter sample
   sample_type: [1,2,3,4]
-  
 - type: tls
   # Configure the ports where to listen for TLS traffic. You can disable
   # the TLS protocol by commenting out the list of ports.
