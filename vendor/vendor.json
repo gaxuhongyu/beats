@@ -31,6 +31,12 @@
 			"revisionTime": "2017-02-20T21:12:21Z"
 		},
 		{
+			"checksumSHA1": "HXtj8nmuB2TyMu/vMx4C6DEVZIQ=",
+			"path": "github.com/VerizonDigital/vflow/packet",
+			"revision": "ade05f9b48805aec302af708c374ad4418b09091",
+			"revisionTime": "2018-01-11T18:08:39Z"
+		},
+		{
 			"checksumSHA1": "fOaPbtxEyjvnQt1WjYV+qBBUa6w=",
 			"path": "github.com/aerospike/aerospike-client-go",
 			"revision": "0f3b54da6bdc2c31c505f9afbc5f434dd2089658",
