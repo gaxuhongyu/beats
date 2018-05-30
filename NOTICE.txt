@@ -3303,6 +3303,23 @@ Apache License 2.0
 
 
 --------------------------------------------------------------------
+Dependency: github.com/VerizonDigital/vflow
+Revision: ade05f9b48805aec302af708c374ad4418b09091
+License type (autodetected): Apache-2.0
+./vendor/github.com/VerizonDigital/vflow/LICENSE:
+--------------------------------------------------------------------
+Apache License 2.0
+
+-------NOTICE-----
+==============================================================
+ vFlow
+ Copyright (C) 2017  Verizon.
+==============================================================
+
+This product includes software developed by
+Verizon (www.verizon.com; www.github.com/Verizon).
+
+--------------------------------------------------------------------
 Dependency: github.com/vmware/govmomi
 Revision: 2cad15190b417804d82edb4981e7b3e62907c4ee
 License type (autodetected): Apache-2.0
