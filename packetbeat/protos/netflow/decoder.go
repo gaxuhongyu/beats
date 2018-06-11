@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/packetbeat/protos/netflow/v5"
 	"github.com/elastic/beats/packetbeat/protos/netflow/v9"
 )
 
@@ -56,7 +57,9 @@ func (d *NFDecoder) Decode() (NTrans, error) {
 	if d.isDecode(version) {
 		switch version {
 		case V5:
-			debugf("Skip Netflow V5 Decode")
+			debugf("Begin Netflow V5 Decode")
+			dv5 := v5.NewDecoder(d.reader, d.t, d.src)
+			return dv5.Decode()
 		case V9:
 			debugf("Begin Netflow V9 Decode")
 			dv9 := v9.NewDecoder(d.reader, d.t, d.src)
