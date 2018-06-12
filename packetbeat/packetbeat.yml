@@ -101,11 +101,11 @@ packetbeat.protocols:
 - type: netflow
   # Configure the ports where to listen for netflow traffic. You can disable
   # the Netflow protocol by commenting out the list of ports.
-  ports: [2056]
+  ports: [2055]
   # 5:Netflow v5
   # 9:Netflow v9
-  # 10: IPFIX version is 10
-  version: [5,9,10]
+  # 10: IPFIX version is 10,For now not dupport 10
+  version: [5,9]
 
 #==================== Elasticsearch template setting ==========================
 

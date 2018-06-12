@@ -66,6 +66,9 @@ func (d *NFDecoder) Decode() (NTrans, error) {
 			return dv9.Decode()
 		case IPFIX:
 			debugf("Skip Netflow V5 Decode")
+			msg := fmt.Sprintf("Netflow Version %d not support", version)
+			debugf(msg)
+			return nil, errors.New(msg)
 		default:
 			msg := fmt.Sprintf("Netflow Version %d not support", version)
 			debugf(msg)
