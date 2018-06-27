@@ -164,18 +164,24 @@ func (f *Flow) Unmarshal(r io.ReadSeeker) error {
 
 // TransInfo Netflow v5 TransInfo
 func (f *Flow) TransInfo(event common.MapStr) {
-	event["src_port"] = f.SrcPort
+	event["src_ip"] = net.IPv4(f.SrcAddr[0], f.SrcAddr[1], f.SrcAddr[2], f.SrcAddr[3])
+	event["dst_ip"] = net.IPv4(f.DstAddr[0], f.DstAddr[1], f.DstAddr[2], f.DstAddr[3])
+	event["next_hop"] = net.IPv4(f.NextHop[0], f.NextHop[1], f.NextHop[2], f.NextHop[3])
 	event["input_interface_value"] = f.InputIndex
 	event["output_interface_value"] = f.OutPutIndex
-	event["tos"] = f.Tos
-	event["src_ip"] = net.IPv4(f.SrcAddr[0], f.SrcAddr[1], f.SrcAddr[2], f.SrcAddr[3])
-	// event["ip_version"] = f.
+	event["packets"] = f.Packets
+	event["frame_length"] = f.FrameLength
+	event["first_switched"] = f.First
+	event["last_switched"] = f.Last
+	event["src_port"] = f.SrcPort
+	event["dst_port"] = f.DstPort
 	event["tcp_flags"] = f.TCPFlags
 	event["ip_protocol"] = f.Protocol
-	event["dst_port"] = f.DstPort
-	event["dst_ip"] = net.IPv4(f.DstAddr[0], f.DstAddr[1], f.DstAddr[2], f.DstAddr[3])
-	// event["version"] =
-	event["frame_length"] = f.FrameLength
+	event["tos"] = f.Tos
+	event["src_as"] = f.SrcAs
+	event["dst_as"] = f.DstAs
+	event["src_mask"] = f.SrcMask
+	event["dst_mask"] = f.DstMask
 }
 
 func read(r io.Reader, v interface{}) error {

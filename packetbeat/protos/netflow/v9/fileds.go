@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
-	"time"
 )
 
 // TemplateInfo save Template data
@@ -12,70 +11,70 @@ var filedsInfo map[string]*filed
 
 var fileds = [][3]string{
 	{"1", "frame_length", "uint64"},
-	// {"2", "IN_PKTS", "uint64"},
-	// {"3", "FLOWS", "uint32"},
+	{"2", "packets", "uint64"},
+	// {"3", "flows", "uint32"},
 	{"4", "ip_protocol", "uint8"},
 	{"5", "tos", "uint8"},
 	{"6", "tcp_flags", "uint8"},
 	{"7", "src_port", "uint16"},
 	{"8", "src_ip", "ip"},
-	// {"9", "SRC_MASK", "uint8"},
+	{"9", "src_mask", "uint8"},
 	{"10", "input_interface_value", "uint32"},
 	{"11", "dst_port", "uint16"},
 	{"12", "dst_ip", "ip"},
-	// {"13", "DST_MASK", "uint8"},
+	{"13", "dst_mask", "uint8"},
 	{"14", "output_interface_value", "uint32"},
-	// {"15", "IPV4_NEXT_HOP", "ip"},
-	// {"16", "SRC_AS", "uint16"},
-	// {"17", "DST_AS", "uint16"},
-	// {"18", "BGP_IPV4_NEXT_HOP", "ip"},
-	// {"19", "MUL_DST_PKTS", "uint32"},
-	// {"20", "MUL_DST_BYTES", "uint32"},
-	// {"21", "LAST_SWITCHED", "time"},
-	// {"22", "FIRST_SWITCHED", "time"},
+	{"15", "next_hop", "ip"},
+	{"16", "src_as", "uint16"},
+	{"17", "dst_as", "uint16"},
+	// {"18", "bgp_ipv4_next_hop", "ip"},
+	// {"19", "mul_dst_pkts", "uint32"},
+	// {"20", "mul_dst_bytes", "uint32"},
+	{"21", "last_switched", "time"},
+	{"22", "first_switched", "time"},
 	{"23", "frame_length", "uint64"},
-	// {"24", "OUT_PKTS", "uint64"},
-	// {"27", "IPV6_SRC_ADDR", "ip"},
-	// {"28", "IPV6_DST_ADDR", "ip"},
-	// {"29", "IPV6_SRC_MASK", "uint8"},
-	// {"30", "IPV6_DST_MASK", "uint8"},
-	// {"31", "IPV6_FLOW_LABEL", "uint32"},
-	// {"32", "ICMP_TYPE", "uint16"},
-	// {"33", "MUL_IGMP_TYPE", "uint8"},
-	// {"34", "SAMPLING_INTERVAL", "uint32"},
-	// {"35", "SAMPLING_ALGORITHM", "uint8"},
-	// {"36", "FLOW_ACTIVE_TIMEOUT", "uint16"},
-	// {"37", "FLOW_INACTIVE_TIMEOUT", "uint16"},
-	// {"38", "ENGINE_TYPE", "uint8"},
-	// {"39", "ENGINE_ID", "uint8"},
-	// {"40", "TOTAL_BYTES_EXP", "uint32"},
-	// {"41", "TOTAL_PKTS_EXP", "uint32"},
-	// {"42", "TOTAL_FLOWS_EXP", "uint32"},
-	// {"46", "MPLS_TOP_LABEL_TYPE", "uint8"},
-	// {"47", "MPLS_TOP_LABEL_IP_ADDR", "uint32"},
-	// {"48", "FLOW_SAMPLER_ID", "uint8"},
-	// {"49", "FLOW_SAMPLER_MODE", "uint8"},
-	// {"50", "FLOW_SAMPLER_RANDOM_INTERVAL", "uint32"},
-	// {"55", "DST_TOS", "uint8"},
-	// {"56", "SRC_MAC", "mac"},
-	// {"57", "DST_MAC", "mac"},
-	// {"58", "SRC_VLAN", "uint16"},
-	// {"59", "DST_VLAN", "uint16"},
-	{"60", "ip_version", "uint8"},
-	// {"61", "DIRECTION", "uint8"},
-	// {"62", "IPV6_NEXT_HOP", "ip"},
-	// {"63", "BGP_IPV6_NEXT_HOP", "ip"},
-	// {"64", "IPV6_OPTION_HEADERS", "uint32"},
-	// {"70", "MPLS_LABEL_1", "uint32"},
-	// {"71", "MPLS_LABEL_2", "uint32"},
-	// {"72", "MPLS_LABEL_3", "uint32"},
-	// {"73", "MPLS_LABEL_4", "uint32"},
-	// {"74", "MPLS_LABEL_5", "uint32"},
-	// {"75", "MPLS_LABEL_6", "uint32"},
-	// {"76", "MPLS_LABEL_7", "uint32"},
-	// {"77", "MPLS_LABEL_8", "uint32"},
-	// {"78", "MPLS_LABEL_9", "uint32"},
-	// {"79", "MPLS_LABEL_10", "uint32"},
+	{"24", "packets", "uint64"},
+	{"27", "src_ip", "ip"},
+	{"28", "dst_ip", "ip"},
+	{"29", "src_mask", "uint8"},
+	{"30", "dst_mask", "uint8"},
+	// {"31", "ipv6_flow_label", "uint32"},
+	// {"32", "icmp_type", "uint16"},
+	// {"33", "mul_igmp_type", "uint8"},
+	// {"34", "sampling_interval", "uint32"},
+	// {"35", "sampling_algorithm", "uint8"},
+	// {"36", "flow_active_timeout", "uint16"},
+	// {"37", "flow_inactive_timeout", "uint16"},
+	// {"38", "engine_type", "uint8"},
+	// {"39", "engine_id", "uint8"},
+	// {"40", "total_bytes_exp", "uint32"},
+	// {"41", "total_pkts_exp", "uint32"},
+	// {"42", "total_flows_exp", "uint32"},
+	// {"46", "mpls_top_label_type", "uint8"},
+	// {"47", "mpls_top_label_ip_addr", "uint32"},
+	// {"48", "flow_sampler_id", "uint8"},
+	// {"49", "flow_sampler_mode", "uint8"},
+	// {"50", "flow_sampler_random_interval", "uint32"},
+	{"55", "tos", "uint8"},
+	// {"56", "src_mac", "mac"},
+	// {"57", "dst_mac", "mac"},
+	// {"58", "src_vlan", "uint16"},
+	// {"59", "dst_vlan", "uint16"},
+	// {"60", "ip_version", "uint8"},
+	// {"61", "direction", "uint8"},
+	{"62", "next_hop", "ip"},
+	// {"63", "bgp_ipv6_next_hop", "ip"},
+	// {"64", "ipv6_option_headers", "uint32"},
+	// {"70", "mpls_label_1", "uint32"},
+	// {"71", "mpls_label_2", "uint32"},
+	// {"72", "mpls_label_3", "uint32"},
+	// {"73", "mpls_label_4", "uint32"},
+	// {"74", "mpls_label_5", "uint32"},
+	// {"75", "mpls_label_6", "uint32"},
+	// {"76", "mpls_label_7", "uint32"},
+	// {"77", "mpls_label_8", "uint32"},
+	// {"78", "mpls_label_9", "uint32"},
+	// {"79", "mpls_label_10", "uint32"},
 }
 
 // Filed filed type define
@@ -103,12 +102,12 @@ func (f *filed) Value(d []byte) interface{} {
 		if len(d) > 4 {
 			ip = net.IPv4(d[0], d[1], d[2], d[3])
 		} else {
-			ip = net.IP(d)
+			ip = net.IP(d[:16])
 		}
 		return ip
 	case "time":
 		s := binary.BigEndian.Uint32(d[0:])
-		return time.Unix(int64(s/1000), 0)
+		return s
 	}
 	return nil
 }
