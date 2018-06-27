@@ -98,6 +98,15 @@ packetbeat.protocols:
   # the TLS protocol by commenting out the list of ports.
   ports: [443]
 
+- type: netflow
+  # Configure the ports where to listen for netflow traffic. You can disable
+  # the Netflow protocol by commenting out the list of ports.
+  ports: [2055]
+  # 5:Netflow v5
+  # 9:Netflow v9
+  # 10: IPFIX version is 10,For now not support 10
+  version: [5,9]
+
 #==================== Elasticsearch template setting ==========================
 
 setup.template.settings:
