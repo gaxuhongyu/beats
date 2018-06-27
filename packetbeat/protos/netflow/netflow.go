@@ -2,6 +2,7 @@ package netflow
 
 import (
 	"bytes"
+	"net"
 	"time"
 
 	"github.com/elastic/beats/libbeat/beat"
@@ -85,12 +86,13 @@ func (netflow *netflowPlugin) ParseUDP(pkt *protos.Packet) {
 		debugf("Netflow decode error：%s", err.Error())
 		return
 	}
-	netflow.publishTransaction(records, t)
+	netflow.publishTransaction(records, t, pkt.Tuple.SrcIP)
 	debugf("Unpack result:%v", records)
 }
 
-func (netflow *netflowPlugin) publishTransaction(d NTrans, t time.Time) {
+func (netflow *netflowPlugin) publishTransaction(d NTrans, t time.Time, agent net.IP) {
 	for _, event := range d.TransInfo() {
+		event["agent"] = agent
 		netflow.results(beat.Event{
 			Timestamp: t,
 			Fields:    event,

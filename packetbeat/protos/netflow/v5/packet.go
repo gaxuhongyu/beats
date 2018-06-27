@@ -162,7 +162,7 @@ func (f *Flow) Unmarshal(r io.ReadSeeker) error {
 	return nil
 }
 
-// TransInfo Netflow v9 TransInfo
+// TransInfo Netflow v5 TransInfo
 func (f *Flow) TransInfo(event common.MapStr) {
 	event["src_port"] = f.SrcPort
 	event["input_interface_value"] = f.InputIndex

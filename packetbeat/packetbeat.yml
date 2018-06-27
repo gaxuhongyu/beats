@@ -104,7 +104,7 @@ packetbeat.protocols:
   ports: [2055]
   # 5:Netflow v5
   # 9:Netflow v9
-  # 10: IPFIX version is 10,For now not dupport 10
+  # 10: IPFIX version is 10,For now not support 10
   version: [5,9]
 
 #==================== Elasticsearch template setting ==========================
