@@ -102,7 +102,7 @@ func (f *filed) Value(d []byte) interface{} {
 		if len(d) > 4 {
 			ip = net.IPv4(d[0], d[1], d[2], d[3])
 		} else {
-			ip = net.IP(d[:16])
+			ip = net.IP(d)
 		}
 		return ip
 	case "time":
