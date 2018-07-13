@@ -54,8 +54,8 @@ type DataFlowSet struct {
 type Packet struct {
 	t                       time.Time
 	Header                  PacketHeader
-	TemplateFlowSets        []*TemplateFlowSet
-	OptionsTemplateFlowSets []*OptionsTemplateFlowSet
+	TemplateFlowSets        *TemplateFlowSet
+	OptionsTemplateFlowSets *OptionsTemplateFlowSet
 	DataFlowSets            []*DataFlowSet
 }
 
@@ -93,8 +93,8 @@ type Packet struct {
 //   |             ...               |              ...              |
 //   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 type TemplateFlowSet struct {
-	Header  FlowSetHeader
-	Records TemplateRecord
+	Header  *FlowSetHeader
+	Records []*TemplateRecord
 }
 
 // TemplateFlowSets Template Records
@@ -127,7 +127,7 @@ type TemplateRecord struct {
 //   |     Option M Field Length     |           Padding             |
 //   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 type OptionsTemplateFlowSet struct {
-	Header         FlowSetHeader
+	Header         *FlowSetHeader
 	TemplateID     uint16
 	OptionScopeLen uint16
 	OptionLen      uint16
@@ -182,8 +182,17 @@ func (ph *PacketHeader) Unmarshal(r io.ReadSeeker) error {
 
 // Unmarshal Unmarshal TemplateFlowSet Records
 func (tfs *TemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
-	if err := tfs.Records.Unmarshal(r); err != nil {
-		return err
+	leng := tfs.Header.Len()
+	for {
+		if leng >= tfs.Header.Length {
+			break
+		}
+		tr := &TemplateRecord{}
+		if err := tr.Unmarshal(r); err != nil {
+			return err
+		}
+		tfs.Records = append(tfs.Records, tr)
+		leng = leng + tr.Length()
 	}
 	return nil
 }
@@ -196,7 +205,6 @@ func (tr *TemplateRecord) Unmarshal(r io.ReadSeeker) error {
 	if err := read(r, &tr.FieldCount); err != nil {
 		return err
 	}
-
 	tr.Fields = make([]FieldSpecifier, tr.FieldCount)
 	for index := uint16(0); index < tr.FieldCount; index++ {
 		if err := tr.Fields[index].Unmarshal(r); err != nil {
@@ -204,6 +212,33 @@ func (tr *TemplateRecord) Unmarshal(r io.ReadSeeker) error {
 		}
 	}
 	return nil
+}
+
+// DataLength Get Template data length
+func (tr *TemplateRecord) DataLength() uint16 {
+	var res uint16
+	for _, v := range tr.Fields {
+		res = res + v.Length
+	}
+	// temp := res % 4
+	// if temp != 0 {
+	// 	res = res + 4 - temp // padding
+	// }
+	return res
+}
+
+// Length Get Template self length
+func (tr *TemplateRecord) Length() uint16 {
+	return tr.FieldCount*4 + 4
+}
+
+// DataLength Get Set data length
+func (otfs *OptionsTemplateFlowSet) DataLength() uint16 {
+	var res uint16
+	for _, v := range otfs.Fields {
+		res = res + v.Length
+	}
+	return res
 }
 
 // Unmarshal Field Specifier
@@ -220,14 +255,14 @@ func (fs *FieldSpecifier) Unmarshal(r io.ReadSeeker) error {
 // Unmarshal Data Flow Set Unmarshal
 func (dfs *DataFlowSet) Unmarshal(r io.ReadSeeker, template interface{}) error {
 	switch template.(type) {
-	case *TemplateFlowSet:
+	case *TemplateRecord:
 		var dLen uint16
-		t := template.(*TemplateFlowSet)
-		debugf("----TemplateFlowSet---:%x", t.Records)
-		for i := uint16(0); i < t.Records.FieldCount; i++ {
+		t := template.(*TemplateRecord)
+		debugf("----TemplateFlowSet---:%x", t.Fields)
+		for i := uint16(0); i < t.FieldCount; i++ {
 			f := &Field{}
-			f.Type = t.Records.Fields[i].Type
-			f.Length = t.Records.Fields[i].Length
+			f.Type = t.Fields[i].Type
+			f.Length = t.Fields[i].Length
 			f.Bytes = make([]byte, f.Length)
 			dLen = dLen + f.Length
 			if _, err := r.Read(f.Bytes); err != nil {
@@ -235,11 +270,10 @@ func (dfs *DataFlowSet) Unmarshal(r io.ReadSeeker, template interface{}) error {
 			}
 			dfs.Records = append(dfs.Records, f)
 		}
-		// skip padding
-		r.Seek(int64(dfs.Header.Length-dfs.Header.Len()-dLen), 1)
 	case *OptionsTemplateFlowSet:
 		var dLen uint16
 		t := template.(*OptionsTemplateFlowSet)
+		debugf("----OptionsTemplateFlowSet---:%x", t.Fields)
 		for i := uint16(0); i < t.GetFieldCount(); i++ {
 			f := &Field{}
 			f.Type = t.Fields[i].Type
@@ -277,6 +311,9 @@ func (fsh *FlowSetHeader) Len() uint16 {
 
 // Unmarshal Get Option Template Flow Set
 func (otfs *OptionsTemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
+	if err := read(r, &otfs.TemplateID); err != nil {
+		return err
+	}
 	if err := read(r, &otfs.OptionScopeLen); err != nil {
 		return err
 	}

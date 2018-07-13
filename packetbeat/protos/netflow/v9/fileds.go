@@ -10,8 +10,8 @@ import (
 var filedsInfo map[string]*filed
 
 var fileds = [][3]string{
-	{"1", "in_bytes", "uint64"},
-	{"2", "packets", "uint64"},
+	{"1", "in_bytes", "uint32"},
+	{"2", "packets", "uint32"},
 	// {"3", "flows", "uint32"},
 	{"4", "ip_protocol", "uint8"},
 	{"5", "tos", "uint8"},
@@ -19,11 +19,11 @@ var fileds = [][3]string{
 	{"7", "src_port", "uint16"},
 	{"8", "src_ip", "ip"},
 	{"9", "src_mask", "uint8"},
-	{"10", "input_interface_value", "uint32"},
+	{"10", "input_interface_value", "uint16"},
 	{"11", "dst_port", "uint16"},
 	{"12", "dst_ip", "ip"},
 	{"13", "dst_mask", "uint8"},
-	{"14", "output_interface_value", "uint32"},
+	{"14", "output_interface_value", "uint16"},
 	{"15", "next_hop", "ip"},
 	{"16", "src_as", "uint16"},
 	{"17", "dst_as", "uint16"},

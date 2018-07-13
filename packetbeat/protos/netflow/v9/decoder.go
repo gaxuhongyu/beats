@@ -49,54 +49,86 @@ func (d *Decoder) Decode() (*Packet, error) {
 		debugf("Unmarshal packet header error: %s", err.Error())
 		return nil, err
 	}
+	debugf("流条数:%d", p.Header.Count)
 	debugf("Packet header : %X", p.Header)
-	for i := uint16(0); i < p.Header.Count; i++ {
+	for index := uint16(0); index < p.Header.Count; {
 		fsh := &FlowSetHeader{}
 		if err = fsh.Unmarshal(d.reader); err != nil {
 			debugf("Unmarshal Flow Set Header Error: %s", err.Error())
 			return nil, err
 		}
 		debugf("Flow Set Header: %X", fsh)
-		// debugf("Reader Data: %X", d.reader)
 		if fsh.ID == 0 {
 			tfs := &TemplateFlowSet{}
-			if err = tfs.Records.Unmarshal(d.reader); err != nil {
+			tfs.Header = fsh
+			if err = tfs.Unmarshal(d.reader); err != nil {
 				debugf("Unmarshal Template Flow Set Error: %s", err.Error())
 				return nil, err
 			}
-			tfs.Header = *fsh
 			debugf("Template Flow Set: %X", tfs)
-			debugf(fmt.Sprintf("%s-%X", d.SrcIP.String(), tfs.Records.TemplateID))
-			p.TemplateFlowSets = append(p.TemplateFlowSets, tfs)
-			TemplateInfo.Store(fmt.Sprintf("%s-%X", d.SrcIP.String(), tfs.Records.TemplateID), tfs)
+			p.TemplateFlowSets = tfs
+			for _, v := range tfs.Records {
+				debugf(fmt.Sprintf("%s-%X", d.SrcIP.String(), v.TemplateID))
+				TemplateInfo.Store(fmt.Sprintf("%s-%X", d.SrcIP.String(), v.TemplateID), v)
+			}
+			index = index + uint16(len(tfs.Records))
 		} else if fsh.ID == 1 {
 			otfs := &OptionsTemplateFlowSet{}
-			otfs.Header = *fsh
+			otfs.Header = fsh
 			if err = otfs.Unmarshal(d.reader); err != nil {
 				debugf("Unmarshal Options Template Flow Set Error: %s", err.Error())
 				return nil, err
 			}
 			debugf("Options Template Flow Set: %X", otfs)
 			debugf(fmt.Sprintf("%s-%X", d.SrcIP.String(), otfs.TemplateID))
-			p.OptionsTemplateFlowSets = append(p.OptionsTemplateFlowSets, otfs)
+			p.OptionsTemplateFlowSets = otfs
 			TemplateInfo.Store(fmt.Sprintf("%s-%X", d.SrcIP.String(), otfs.TemplateID), otfs)
+			index++
 		} else if fsh.ID > 255 {
-			dfs := &DataFlowSet{}
-			dfs.Header = fsh
 			template, ok := TemplateInfo.Load(fmt.Sprintf("%s-%X", d.SrcIP.String(), fsh.ID))
 			if ok && template != nil {
-				if err = dfs.Unmarshal(d.reader, template); err != nil {
-					debugf("Unmarshal Data Flow Set Error: %s", err.Error())
-					return nil, err
+				switch template.(type) {
+				case *TemplateRecord:
+					var dLen uint16
+					t := template.(*TemplateRecord)
+					count := fsh.Length / t.DataLength()
+					debugf("Count:%d", count)
+					for i := uint16(0); i < count; i++ {
+						dfs := &DataFlowSet{}
+						dfs.Header = fsh
+						if err = dfs.Unmarshal(d.reader, t); err != nil {
+							debugf("Unmarshal Data Flow Set Error: %s", err.Error())
+							return nil, err
+						}
+						debugf("Data Flow Set:%X", dfs)
+						p.DataFlowSets = append(p.DataFlowSets, dfs)
+						dLen = dLen + t.DataLength()
+					}
+					index = index + count
+					// skip padding
+					d.reader.Seek(int64(fsh.Length-fsh.Len()-dLen), 1)
+				case *OptionsTemplateFlowSet:
+					var dLen uint16
+					t := template.(*OptionsTemplateFlowSet)
+					dfs := &DataFlowSet{}
+					dfs.Header = fsh
+					if err = dfs.Unmarshal(d.reader, t); err != nil {
+						debugf("Unmarshal Options Data Flow Set Error: %s", err.Error())
+						return nil, err
+					}
+					debugf("Options Data Flow Set:%X", dfs)
+					p.DataFlowSets = append(p.DataFlowSets, dfs)
+					index = index + 1
+					dLen = dLen + t.DataLength()
+					// skip padding
+					d.reader.Seek(int64(t.Header.Length-dfs.Header.Len()-dLen), 1)
+				default:
+					return nil, errTemplate
 				}
-				debugf("Data Flow Set:%X", dfs)
-				p.DataFlowSets = append(p.DataFlowSets, dfs)
 			} else {
 				debugf("Template ID: %X Not Found", fsh.ID)
 				d.reader.Seek(int64(fsh.Length-fsh.Len()), 1)
 			}
-		} else {
-			return nil, errTemplateID
 		}
 	}
 	return p, nil
