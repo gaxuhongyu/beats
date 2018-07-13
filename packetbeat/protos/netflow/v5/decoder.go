@@ -53,8 +53,9 @@ func (p *Packet) TransInfo() []common.MapStr {
 	res := make([]common.MapStr, 0)
 	for _, v := range p.Flows {
 		event := common.MapStr{
-			"type":    "netflow",
-			"version": 5,
+			"type":              "netflow",
+			"sampling_interval": p.Header.SamplingInterval,
+			"version":           5,
 		}
 		v.TransInfo(event)
 		res = append(res, event)

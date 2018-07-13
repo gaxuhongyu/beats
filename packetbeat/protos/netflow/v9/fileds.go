@@ -10,7 +10,7 @@ import (
 var filedsInfo map[string]*filed
 
 var fileds = [][3]string{
-	{"1", "frame_length", "uint64"},
+	{"1", "in_bytes", "uint64"},
 	{"2", "packets", "uint64"},
 	// {"3", "flows", "uint32"},
 	{"4", "ip_protocol", "uint8"},
@@ -32,7 +32,7 @@ var fileds = [][3]string{
 	// {"20", "mul_dst_bytes", "uint32"},
 	{"21", "last_switched", "time"},
 	{"22", "first_switched", "time"},
-	{"23", "frame_length", "uint64"},
+	{"23", "out_bytes", "uint64"},
 	{"24", "packets", "uint64"},
 	{"27", "src_ip", "ip"},
 	{"28", "dst_ip", "ip"},
@@ -41,7 +41,7 @@ var fileds = [][3]string{
 	// {"31", "ipv6_flow_label", "uint32"},
 	// {"32", "icmp_type", "uint16"},
 	// {"33", "mul_igmp_type", "uint8"},
-	// {"34", "sampling_interval", "uint32"},
+	{"34", "sampling_interval", "uint32"},
 	// {"35", "sampling_algorithm", "uint8"},
 	// {"36", "flow_active_timeout", "uint16"},
 	// {"37", "flow_inactive_timeout", "uint16"},
@@ -61,7 +61,7 @@ var fileds = [][3]string{
 	// {"58", "src_vlan", "uint16"},
 	// {"59", "dst_vlan", "uint16"},
 	// {"60", "ip_version", "uint8"},
-	// {"61", "direction", "uint8"},
+	{"61", "direction", "uint8"},
 	{"62", "next_hop", "ip"},
 	// {"63", "bgp_ipv6_next_hop", "ip"},
 	// {"64", "ipv6_option_headers", "uint32"},

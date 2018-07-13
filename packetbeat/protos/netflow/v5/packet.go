@@ -170,7 +170,7 @@ func (f *Flow) TransInfo(event common.MapStr) {
 	event["input_interface_value"] = f.InputIndex
 	event["output_interface_value"] = f.OutPutIndex
 	event["packets"] = f.Packets
-	event["frame_length"] = f.FrameLength
+	event["bytes"] = f.FrameLength
 	event["first_switched"] = f.First
 	event["last_switched"] = f.Last
 	event["src_port"] = f.SrcPort
