@@ -134,8 +134,8 @@ func (p *Packet) TransInfo() []common.MapStr {
 		}
 		for _, vv := range v.Records {
 			t := fmt.Sprintf("%d", vv.Type)
-			if f := filedsInfo[t]; f != nil {
-				if rs := f.Value(vv.Bytes); rs != nil && len(vv.Bytes) > 0 {
+			if f := filedsInfo[t]; f != nil && len(vv.Bytes) > 0 {
+				if rs := f.Value(vv.Bytes); rs != nil {
 					event[f.Name] = rs
 				}
 			}
