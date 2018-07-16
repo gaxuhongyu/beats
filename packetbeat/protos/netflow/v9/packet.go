@@ -227,9 +227,19 @@ func (tr *TemplateRecord) DataLength() uint16 {
 	return res
 }
 
+// GetFields Get Template all field
+func (tr *TemplateRecord) GetFields() []FieldSpecifier {
+	return tr.Fields
+}
+
 // Length Get Template self length
 func (tr *TemplateRecord) Length() uint16 {
 	return tr.FieldCount*4 + 4
+}
+
+// Length Get Template self length
+func (otfs *OptionsTemplateFlowSet) Length() uint16 {
+	return otfs.Header.Length
 }
 
 // DataLength Get Set data length
@@ -239,6 +249,11 @@ func (otfs *OptionsTemplateFlowSet) DataLength() uint16 {
 		res = res + v.Length
 	}
 	return res
+}
+
+// GetFields Get Template all field
+func (otfs *OptionsTemplateFlowSet) GetFields() []FieldSpecifier {
+	return otfs.Fields
 }
 
 // Unmarshal Field Specifier
@@ -253,43 +268,22 @@ func (fs *FieldSpecifier) Unmarshal(r io.ReadSeeker) error {
 }
 
 // Unmarshal Data Flow Set Unmarshal
-func (dfs *DataFlowSet) Unmarshal(r io.ReadSeeker, template interface{}) error {
-	switch template.(type) {
-	case *TemplateRecord:
-		var dLen uint16
-		t := template.(*TemplateRecord)
-		debugf("----TemplateFlowSet---:%x", t.Fields)
-		for i := uint16(0); i < t.FieldCount; i++ {
-			f := &Field{}
-			f.Type = t.Fields[i].Type
-			f.Length = t.Fields[i].Length
-			f.Bytes = make([]byte, f.Length)
-			dLen = dLen + f.Length
-			if _, err := r.Read(f.Bytes); err != nil {
-				return err
-			}
-			dfs.Records = append(dfs.Records, f)
+func (dfs *DataFlowSet) Unmarshal(r io.ReadSeeker, t Template) error {
+	var dLen uint16
+	fields := t.GetFields()
+	for i := uint16(0); i < t.GetFieldCount(); i++ {
+		f := &Field{}
+		f.Type = fields[i].Type
+		f.Length = fields[i].Length
+		dLen = dLen + f.Length
+		f.Bytes = make([]byte, f.Length)
+		if _, err := r.Read(f.Bytes); err != nil {
+			return err
 		}
-	case *OptionsTemplateFlowSet:
-		var dLen uint16
-		t := template.(*OptionsTemplateFlowSet)
-		debugf("----OptionsTemplateFlowSet---:%x", t.Fields)
-		for i := uint16(0); i < t.GetFieldCount(); i++ {
-			f := &Field{}
-			f.Type = t.Fields[i].Type
-			f.Length = t.Fields[i].Length
-			dLen = dLen + f.Length
-			f.Bytes = make([]byte, f.Length)
-			if _, err := r.Read(f.Bytes); err != nil {
-				return err
-			}
-			dfs.Records = append(dfs.Records, f)
-		}
-		// skip padding
-		r.Seek(int64(t.Header.Length-dfs.Header.Len()-dLen), 1)
-	default:
-		return errTemplate
+		dfs.Records = append(dfs.Records, f)
 	}
+	// skip padding
+	// r.Seek(int64(t.Length()-dfs.Header.Len()-dLen), 1)
 	return nil
 }
 
@@ -328,6 +322,11 @@ func (otfs *OptionsTemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
 		}
 	}
 	return nil
+}
+
+// GetFieldCount Get Template Field Count
+func (tr *TemplateRecord) GetFieldCount() uint16 {
+	return tr.FieldCount
 }
 
 // GetFieldCount Get Field Count

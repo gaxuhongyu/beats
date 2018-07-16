@@ -25,6 +25,9 @@ var TemplateInfo sync.Map
 // Template Interface
 type Template interface {
 	DataLength() uint16
+	GetFields() []FieldSpecifier
+	GetFieldCount() uint16
+	Length() uint16
 }
 
 // Decoder represents v9 decoder
@@ -92,44 +95,24 @@ func (d *Decoder) Decode() (*Packet, error) {
 		} else if fsh.ID > 255 {
 			template, ok := TemplateInfo.Load(fmt.Sprintf("%s-%X", d.SrcIP.String(), fsh.ID))
 			if ok && template != nil {
-				switch template.(type) {
-				case *TemplateRecord:
-					var dLen uint16
-					t := template.(*TemplateRecord)
-					count := fsh.Length / t.DataLength()
-					debugf("Count:%d", count)
-					for i := uint16(0); i < count; i++ {
-						dfs := &DataFlowSet{}
-						dfs.Header = fsh
-						if err = dfs.Unmarshal(d.reader, t); err != nil {
-							debugf("Unmarshal Data Flow Set Error: %s", err.Error())
-							return nil, err
-						}
-						debugf("Data Flow Set:%X", dfs)
-						p.DataFlowSets = append(p.DataFlowSets, dfs)
-						dLen = dLen + t.DataLength()
-					}
-					index = index + count
-					// skip padding
-					d.reader.Seek(int64(fsh.Length-fsh.Len()-dLen), 1)
-				case *OptionsTemplateFlowSet:
-					var dLen uint16
-					t := template.(*OptionsTemplateFlowSet)
+				var dLen uint16
+				t := template.(Template)
+				count := fsh.Length / t.DataLength()
+				debugf("Count:%d", count)
+				for i := uint16(0); i < count; i++ {
 					dfs := &DataFlowSet{}
 					dfs.Header = fsh
 					if err = dfs.Unmarshal(d.reader, t); err != nil {
-						debugf("Unmarshal Options Data Flow Set Error: %s", err.Error())
+						debugf("Unmarshal Data Flow Set Error: %s", err.Error())
 						return nil, err
 					}
-					debugf("Options Data Flow Set:%X", dfs)
+					debugf("Data Flow Set:%X", dfs)
 					p.DataFlowSets = append(p.DataFlowSets, dfs)
-					index = index + 1
 					dLen = dLen + t.DataLength()
-					// skip padding
-					d.reader.Seek(int64(t.Header.Length-dfs.Header.Len()-dLen), 1)
-				default:
-					return nil, errTemplate
 				}
+				index = index + count
+				// skip padding
+				d.reader.Seek(int64(fsh.Length-fsh.Len()-dLen), 1)
 			} else {
 				debugf("Template ID: %X Not Found", fsh.ID)
 				d.reader.Seek(int64(fsh.Length-fsh.Len()), 1)
@@ -152,7 +135,7 @@ func (p *Packet) TransInfo() []common.MapStr {
 		for _, vv := range v.Records {
 			t := fmt.Sprintf("%d", vv.Type)
 			if f := filedsInfo[t]; f != nil {
-				if rs := f.Value(vv.Bytes); rs != nil {
+				if rs := f.Value(vv.Bytes); rs != nil && len(vv.Bytes) > 0 {
 					event[f.Name] = rs
 				}
 			}
