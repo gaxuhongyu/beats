@@ -22,6 +22,11 @@ var (
 // TemplateInfo save Template data
 var TemplateInfo sync.Map
 
+// Template Interface
+type Template interface {
+	DataLength() uint16
+}
+
 // Decoder represents v9 decoder
 type Decoder struct {
 	reader io.ReadSeeker

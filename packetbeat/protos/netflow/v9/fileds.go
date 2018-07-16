@@ -65,16 +65,16 @@ var fileds = [][3]string{
 	{"62", "next_hop", "ip"},
 	// {"63", "bgp_ipv6_next_hop", "ip"},
 	// {"64", "ipv6_option_headers", "uint32"},
-	// {"70", "mpls_label_1", "uint32"},
-	// {"71", "mpls_label_2", "uint32"},
-	// {"72", "mpls_label_3", "uint32"},
-	// {"73", "mpls_label_4", "uint32"},
-	// {"74", "mpls_label_5", "uint32"},
-	// {"75", "mpls_label_6", "uint32"},
-	// {"76", "mpls_label_7", "uint32"},
-	// {"77", "mpls_label_8", "uint32"},
-	// {"78", "mpls_label_9", "uint32"},
-	// {"79", "mpls_label_10", "uint32"},
+	{"70", "mpls_label_1", "uint24"},
+	{"71", "mpls_label_2", "uint24"},
+	{"72", "mpls_label_3", "uint24"},
+	{"73", "mpls_label_4", "uint24"},
+	{"74", "mpls_label_5", "uint24"},
+	{"75", "mpls_label_6", "uint24"},
+	{"76", "mpls_label_7", "uint24"},
+	{"77", "mpls_label_8", "uint24"},
+	{"78", "mpls_label_9", "uint24"},
+	{"79", "mpls_label_10", "uint24"},
 }
 
 // Filed filed type define
@@ -90,6 +90,9 @@ func (f *filed) Value(d []byte) interface{} {
 		return uint8(d[0])
 	case "uint16":
 		return binary.BigEndian.Uint16(d[0:])
+	case "uint24":
+		// debugf("Value:%X", d) //2602A1
+		return uint32(d[2]) | uint32(d[1])<<8 | uint32(d[0])<<16
 	case "uint32":
 		return binary.BigEndian.Uint32(d[0:])
 	case "uint64":
