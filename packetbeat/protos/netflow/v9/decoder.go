@@ -52,7 +52,7 @@ func (d *Decoder) Decode() (*Packet, error) {
 		p   *Packet
 		err error
 	)
-	p = &Packet{t: d.t}
+	p = &Packet{t: d.t, SrcIP: d.SrcIP}
 	if err = p.Header.Unmarshal(d.reader); err != nil {
 		debugf("Unmarshal packet header error: %s", err.Error())
 		return nil, err
@@ -107,7 +107,13 @@ func (d *Decoder) Decode() (*Packet, error) {
 						return nil, err
 					}
 					debugf("Data Flow Set:%X", dfs)
-					p.DataFlowSets = append(p.DataFlowSets, dfs)
+					switch template.(type) {
+					case *TemplateRecord:
+						p.DataFlowSets = append(p.DataFlowSets, dfs)
+					case *OptionsTemplateFlowSet:
+						TemplateInfo.Delete(d.SrcIP.String())
+						TemplateInfo.Store(d.SrcIP.String(), dfs)
+					}
 					dLen = dLen + t.DataLength()
 				}
 				index = index + count
@@ -137,6 +143,18 @@ func (p *Packet) TransInfo() []common.MapStr {
 			if f := filedsInfo[t]; f != nil && len(vv.Bytes) > 0 {
 				if rs := f.Value(vv.Bytes); rs != nil {
 					event[f.Name] = rs
+				}
+			}
+		}
+		FlowSet, ok := TemplateInfo.Load(p.SrcIP.String())
+		if ok && FlowSet != nil {
+			ofs := FlowSet.(*DataFlowSet)
+			for _, f1 := range ofs.Records {
+				t := fmt.Sprintf("%d", f1.Type)
+				if f2 := filedsInfo[t]; f2 != nil && len(f1.Bytes) > 0 {
+					if rs := f2.Value(f1.Bytes); rs != nil {
+						event[f2.Name] = rs
+					}
 				}
 			}
 		}

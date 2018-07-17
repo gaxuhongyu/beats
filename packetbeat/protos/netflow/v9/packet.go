@@ -3,6 +3,7 @@ package v9
 import (
 	"encoding/binary"
 	"io"
+	"net"
 	"time"
 )
 
@@ -52,6 +53,7 @@ type DataFlowSet struct {
 //   |        | +----------+ +---------+ +----------+     |
 //   +--------+-------------------------------------------+
 type Packet struct {
+	SrcIP                   net.IP
 	t                       time.Time
 	Header                  PacketHeader
 	TemplateFlowSets        *TemplateFlowSet
