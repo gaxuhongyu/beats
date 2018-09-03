@@ -22,6 +22,9 @@ var (
 // TemplateInfo save Template data
 var TemplateInfo sync.Map
 
+// OptionDataInfo Option data
+var OptionDataInfo sync.Map
+
 // Template Interface
 type Template interface {
 	DataLength() uint16
@@ -39,6 +42,7 @@ type Decoder struct {
 
 func init() {
 	TemplateInfo = sync.Map{}
+	OptionDataInfo = sync.Map{}
 }
 
 // NewDecoder factory function
@@ -76,8 +80,8 @@ func (d *Decoder) Decode() (*Packet, error) {
 			debugf("Template Flow Set: %X", tfs)
 			p.TemplateFlowSets = tfs
 			for _, v := range tfs.Records {
-				debugf(fmt.Sprintf("%s-%X", d.SrcIP.String(), v.TemplateID))
-				TemplateInfo.Store(fmt.Sprintf("%s-%X", d.SrcIP.String(), v.TemplateID), v)
+				debugf(fmt.Sprintf("%s-%d", d.SrcIP.String(), v.TemplateID))
+				TemplateInfo.Store(fmt.Sprintf("%s-%d", d.SrcIP.String(), v.TemplateID), v)
 			}
 			index = index + uint16(len(tfs.Records))
 		} else if fsh.ID == 1 {
@@ -88,12 +92,12 @@ func (d *Decoder) Decode() (*Packet, error) {
 				return nil, err
 			}
 			debugf("Options Template Flow Set: %X", otfs)
-			debugf(fmt.Sprintf("%s-%X", d.SrcIP.String(), otfs.TemplateID))
+			debugf(fmt.Sprintf("%s-%d", d.SrcIP.String(), otfs.TemplateID))
 			p.OptionsTemplateFlowSets = otfs
-			TemplateInfo.Store(fmt.Sprintf("%s-%X", d.SrcIP.String(), otfs.TemplateID), otfs)
+			TemplateInfo.Store(fmt.Sprintf("%s-%d", d.SrcIP.String(), otfs.TemplateID), otfs)
 			index++
 		} else if fsh.ID > 255 {
-			template, ok := TemplateInfo.Load(fmt.Sprintf("%s-%X", d.SrcIP.String(), fsh.ID))
+			template, ok := TemplateInfo.Load(fmt.Sprintf("%s-%d", d.SrcIP.String(), fsh.ID))
 			if ok && template != nil {
 				var dLen uint16
 				t := template.(Template)
@@ -111,8 +115,17 @@ func (d *Decoder) Decode() (*Packet, error) {
 					case *TemplateRecord:
 						p.DataFlowSets = append(p.DataFlowSets, dfs)
 					case *OptionsTemplateFlowSet:
-						TemplateInfo.Delete(d.SrcIP.String())
-						TemplateInfo.Store(d.SrcIP.String(), dfs)
+						var data map[string]*DataFlowSet
+						TemplateID := fmt.Sprintf("%s-%d", d.SrcIP.String(), template.(*OptionsTemplateFlowSet).TemplateID)
+						value, ok := OptionDataInfo.Load(d.SrcIP.String())
+						if ok && value != nil {
+							data = value.(map[string]*DataFlowSet)
+							data[TemplateID] = dfs
+						} else {
+							data = make(map[string]*DataFlowSet)
+							data[TemplateID] = dfs
+						}
+						OptionDataInfo.Store(d.SrcIP.String(), data)
 					}
 					dLen = dLen + t.DataLength()
 				}
@@ -146,14 +159,17 @@ func (p *Packet) TransInfo() []common.MapStr {
 				}
 			}
 		}
-		FlowSet, ok := TemplateInfo.Load(p.SrcIP.String())
-		if ok && FlowSet != nil {
-			ofs := FlowSet.(*DataFlowSet)
-			for _, f1 := range ofs.Records {
-				t := fmt.Sprintf("%d", f1.Type)
-				if f2 := filedsInfo[t]; f2 != nil && len(f1.Bytes) > 0 {
-					if rs := f2.Value(f1.Bytes); rs != nil {
-						event[f2.Name] = rs
+		// FlowSet, ok := TemplateInfo.Load(p.SrcIP.String())
+		value, ok := TemplateInfo.Load(p.SrcIP.String())
+		if ok && value != nil {
+			data := value.(map[string]*DataFlowSet)
+			for _, v := range data {
+				for _, f1 := range v.Records {
+					t := fmt.Sprintf("%d", f1.Type)
+					if f2 := filedsInfo[t]; f2 != nil && len(f1.Bytes) > 0 {
+						if rs := f2.Value(f1.Bytes); rs != nil {
+							event[f2.Name] = rs
+						}
 					}
 				}
 			}
