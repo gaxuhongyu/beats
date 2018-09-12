@@ -84,10 +84,10 @@ type filed struct {
 }
 
 // Value dff
-func (f *filed) Value(d []byte) interface{} {
+func (f *filed) Value(d []byte, length uint16) interface{} {
 	switch f.Type {
 	case "digital":
-		switch len(d) {
+		switch length {
 		case 1:
 			return uint8(d[0])
 		case 2:
@@ -95,9 +95,9 @@ func (f *filed) Value(d []byte) interface{} {
 		case 3:
 			return uint32(d[2]) | uint32(d[1])<<8 | uint32(d[0])<<16
 		case 4:
-			return binary.BigEndian.Uint32(d[0:])
+			return binary.BigEndian.Uint32(d)
 		case 8:
-			return binary.BigEndian.Uint64(d[0:])
+			return binary.BigEndian.Uint64(d)
 		default:
 			return d
 		}
@@ -106,7 +106,7 @@ func (f *filed) Value(d []byte) interface{} {
 		return fmt.Sprintf(FmtMacAddr, d[0], d[1], d[2], d[3], d[4], d[5])
 	case "ip":
 		var ip net.IP
-		if len(d) > 4 {
+		if length > 4 {
 			ip = net.IPv4(d[0], d[1], d[2], d[3])
 		} else {
 			ip = net.IP(d)
