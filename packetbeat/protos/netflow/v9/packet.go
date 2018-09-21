@@ -133,7 +133,8 @@ type OptionsTemplateFlowSet struct {
 	TemplateID     uint16
 	OptionScopeLen uint16
 	OptionLen      uint16
-	Fields         []FieldSpecifier
+	// OptionScopeFields *[]FieldSpecifier
+	OptionFields *[]FieldSpecifier
 }
 
 // PacketHeader more detail see RFC 3954 section 5.1:
@@ -247,7 +248,7 @@ func (otfs *OptionsTemplateFlowSet) Length() uint16 {
 // DataLength Get Set data length
 func (otfs *OptionsTemplateFlowSet) DataLength() uint16 {
 	var res uint16
-	for _, v := range otfs.Fields {
+	for _, v := range *otfs.OptionFields {
 		res = res + v.Length
 	}
 	return res
@@ -255,7 +256,7 @@ func (otfs *OptionsTemplateFlowSet) DataLength() uint16 {
 
 // GetFields Get Template all field
 func (otfs *OptionsTemplateFlowSet) GetFields() []FieldSpecifier {
-	return otfs.Fields
+	return *otfs.OptionFields
 }
 
 // Unmarshal Field Specifier
@@ -307,6 +308,9 @@ func (fsh *FlowSetHeader) Len() uint16 {
 
 // Unmarshal Get Option Template Flow Set
 func (otfs *OptionsTemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
+	var (
+		of *[]FieldSpecifier
+	)
 	if err := read(r, &otfs.TemplateID); err != nil {
 		return err
 	}
@@ -316,14 +320,29 @@ func (otfs *OptionsTemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
 	if err := read(r, &otfs.OptionLen); err != nil {
 		return err
 	}
-	l := otfs.OptionScopeLen/4 + otfs.OptionLen/4
-	otfs.Fields = make([]FieldSpecifier, l)
-	for i := uint16(0); i < l; i++ {
-		if err := otfs.Fields[i].Unmarshal(r); err != nil {
-			return err
+	of, err := UnmarshalFields(r, otfs.OptionLen/4)
+	if err != nil {
+		return err
+	}
+	otfs.OptionFields = of
+	r.Seek(int64(otfs.Length()-(otfs.Header.Len()+6+otfs.OptionLen)), 1)
+	return nil
+}
+
+// UnmarshalFields Unpack Fields
+func UnmarshalFields(r io.ReadSeeker, length uint16) (*[]FieldSpecifier, error) {
+	f := make([]FieldSpecifier, length)
+	for i := uint16(0); i < length; i++ {
+		if err := f[i].Unmarshal(r); err != nil {
+			return nil, err
+		}
+		// if scope type is 1-System,2-Interface,3-Line Card,4-Cache,5-Template then remove it
+		if f[i].Type > 0 && f[i].Type < 6 {
+			debugf("Scope Type:%d", f[i].Type)
+			f[i].Type = 0
 		}
 	}
-	return nil
+	return &f, nil
 }
 
 // GetFieldCount Get Template Field Count
@@ -333,7 +352,7 @@ func (tr *TemplateRecord) GetFieldCount() uint16 {
 
 // GetFieldCount Get Field Count
 func (otfs *OptionsTemplateFlowSet) GetFieldCount() uint16 {
-	return (otfs.OptionLen + otfs.OptionScopeLen) / 4
+	return otfs.OptionLen / 4
 }
 
 func read(r io.Reader, v interface{}) error {
