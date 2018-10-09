@@ -162,15 +162,6 @@ func (p *Packet) TransInfo() []common.MapStr {
 			"type":    "netflow",
 			"version": 9,
 		}
-		for _, vv := range v.Records {
-			t := fmt.Sprintf("%d", vv.Type)
-			if f := filedsInfo[t]; f != nil && len(vv.Bytes) > 0 {
-				if rs := f.Value(vv.Bytes, vv.Length); rs != nil {
-					event[f.Name] = rs
-				}
-			}
-
-		}
 		// FlowSet, ok := TemplateInfo.Load(p.SrcIP.String())
 		value, ok := OptionDataInfo.Load(p.SrcIP.String())
 		if ok && value != nil {
@@ -183,6 +174,14 @@ func (p *Packet) TransInfo() []common.MapStr {
 							event[f2.Name] = rs
 						}
 					}
+				}
+			}
+		}
+		for _, vv := range v.Records {
+			t := fmt.Sprintf("%d", vv.Type)
+			if f := filedsInfo[t]; f != nil && len(vv.Bytes) > 0 {
+				if rs := f.Value(vv.Bytes, vv.Length); rs != nil {
+					event[f.Name] = rs
 				}
 			}
 		}

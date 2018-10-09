@@ -54,7 +54,7 @@ var fileds = [][3]string{
 	{"47", "mpls_top_label_ip_addr", "digital"},
 	{"48", "flow_sampler_id", "digital"},
 	{"49", "flow_sampler_mode", "digital"},
-	{"50", "flow_sampler_random_interval", "digital"},
+	{"50", "sampling_interval", "digital"},
 	{"55", "tos", "digital"},
 	{"56", "src_mac", "mac"},
 	{"57", "dst_mac", "mac"},

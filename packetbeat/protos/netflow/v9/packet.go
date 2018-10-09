@@ -133,8 +133,8 @@ type OptionsTemplateFlowSet struct {
 	TemplateID     uint16
 	OptionScopeLen uint16
 	OptionLen      uint16
-	// OptionScopeFields *[]FieldSpecifier
-	OptionFields *[]FieldSpecifier
+	Scope1Fields   *FieldSpecifier
+	OptionFields   *[]FieldSpecifier
 }
 
 // PacketHeader more detail see RFC 3954 section 5.1:
@@ -309,8 +309,10 @@ func (fsh *FlowSetHeader) Len() uint16 {
 // Unmarshal Get Option Template Flow Set
 func (otfs *OptionsTemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
 	var (
-		of *[]FieldSpecifier
+		of          *[]FieldSpecifier
+		scope1field *FieldSpecifier
 	)
+	scope1field = &FieldSpecifier{}
 	if err := read(r, &otfs.TemplateID); err != nil {
 		return err
 	}
@@ -320,6 +322,10 @@ func (otfs *OptionsTemplateFlowSet) Unmarshal(r io.ReadSeeker) error {
 	if err := read(r, &otfs.OptionLen); err != nil {
 		return err
 	}
+	if err := scope1field.Unmarshal(r); err != nil {
+		return err
+	}
+	otfs.Scope1Fields = scope1field
 	of, err := UnmarshalFields(r, otfs.OptionLen/4)
 	if err != nil {
 		return err
